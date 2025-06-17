@@ -30,4 +30,4 @@ jobs:
           -v ${{ github.workspace }}:/app \
           -w /app \
           simplified-paperless-bigcapital-middleware \
-          /bin/bash -c "pip install pytest && tests/"
+          /bin/bash -c "pip install pytest && pytest tests/"
