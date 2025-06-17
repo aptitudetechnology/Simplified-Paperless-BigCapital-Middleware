@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<h2>Recent Documents</h2>
+<table>
+  <tr>
+    <th>Filename</th>
+    <th>Status</th>
+    <th>Vendor</th>
+    <th>Total Amount</th>
+    <th>Uploaded</th>
+  </tr>
+  {% for doc in recent_docs %}
+  <tr>
+    <td>{{ doc.original_filename }}</td>
+    <td>{{ doc.status }}</td>
+    <td>{{ doc.vendor_name }}</td>
+    <td>{{ doc.total_amount }}</td>
+    <td>{{ doc.upload_date }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Statistics (Last 30 Days)</h2>
+<ul>
+  <li>Total Documents: {{ stats.total_docs }}</li>
+  <li>Completed: {{ stats.completed }}</li>
+  <li>Pending: {{ stats.pending }}</li>
+  <li>Failed: {{ stats.failed }}</li>
+  <li>Average Amount: {{ stats.avg_amount }}</li>
+</ul>
+{% endblock %}
+

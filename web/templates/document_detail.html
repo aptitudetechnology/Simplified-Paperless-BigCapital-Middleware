@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Document Detail{% endblock %}
+{% block content %}
+<h1>Document: {{ document.original_filename }}</h1>
+
+<p><strong>Status:</strong> {{ document.status }}</p>
+<p><strong>Total Amount:</strong> {{ document.total_amount }}</p>
+<p><strong>Vendor:</strong> {{ document.vendor_name }}</p>
+<p><strong>Uploaded:</strong> {{ document.upload_date }}</p>
+
+<h2>Line Items</h2>
+<table>
+  <tr>
+    <th>#</th>
+    <th>Description</th>
+    <th>Qty</th>
+    <th>Price</th>
+  </tr>
+  {% for item in line_items %}
+  <tr>
+    <td>{{ item.line_number }}</td>
+    <td>{{ item.description }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.unit_price }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Processing Log</h2>
+<ul>
+  {% for log in processing_log %}
+  <li>[{{ log.created_at }}] ({{ log.level }}) {{ log.message }}</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
+
