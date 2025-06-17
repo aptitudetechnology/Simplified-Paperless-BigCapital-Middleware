@@ -1,0 +1,418 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        
+        .sidebar {
+            background-color: var(--primary-color);
+            min-height: calc(100vh - 56px);
+            padding: 1rem 0;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0;
+            margin: 0.25rem 0;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .main-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+        
+        .status-badge {
+            font-size: 0.875em;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+        }
+        
+        .status-pending { background-color: var(--warning-color); color: white; }
+        .status-processing { background-color: var(--secondary-color); color: white; }
+        .status-completed { background-color: var(--success-color); color: white; }
+        .status-failed { background-color: var(--danger-color); color: white; }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card h3 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .file-drop-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: var(--secondary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .table th {
+            background-color: var(--light-color);
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .main-content {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('web.index') }}">
+                <i class="fas fa-file-invoice-dollar me-2"></i>
+                {{ app_name }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text">
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="current-time"></span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.index' %}active{% endif %}" href="{{ url_for('web.index') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.upload_page' %}active{% endif %}" href="{{ url_for('web.upload_page') }}">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>
+                                Upload
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.documents_list' %}active{% endif %}" href="{{ url_for('web.documents_list') }}">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Documents
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="refreshStats()">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Statistics
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="pt-3">
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+        
+        // Update time every second
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Refresh statistics
+        function refreshStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Stats refreshed:', data);
+                    // Update UI with new stats if needed
+                })
+                .catch(error => console.error('Error refreshing stats:', error));
+        }
+        
+        // Auto-refresh every 30 seconds
+        setInterval(refreshStats, 30000);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshStats()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    {% if stats %}
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <h3>{{ stats.total_docs or 0 }}</h3>
+            <p><i class="fas fa-file-alt me-1"></i> Total Documents</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <h3>{{ stats.completed or 0 }}</h3>
+            <p><i class="fas fa-check-circle me-1"></i> Completed</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <h3>{{ stats.pending or 0 }}</h3>
+            <p><i class="fas fa-clock me-1"></i> Pending</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card">
+            <h3>{{ stats.avg_amount | currency if stats.avg_amount else '$0.00' }}</h3>
+            <p><i class="fas fa-dollar-sign me-1"></i> Avg Amount</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No statistics available. Upload some documents to get started!
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="main-content">
+            <h4><i class="fas fa-bolt me-2"></i> Quick Actions</h4>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('web.upload_page') }}" class="btn btn-primary">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                    Upload New Document
+                </a>
+                <a href="{{ url_for('web.documents_list') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-list me-2"></i>
+                    View All Documents
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="main-content">
+            <h4><i class="fas fa-chart-pie me-2"></i> Processing Status</h4>
+            {% if stats %}
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                        <br><small>{{ stats.completed or 0 }} Completed</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-2x"></i>
+                        <br><small>{{ stats.pending or 0 }} Pending</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        <br><small>{{ stats.failed or 0 }} Failed</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Documents -->
+<div class="main-content">
+    <h4><i class="fas fa-history me-2"></i> Recent Documents</h4>
+    
+    {% if recent_docs %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Status</th>
+                    <th>Vendor</th>
+                    <th>Amount</th>
+                    <th>Upload Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in recent_docs %}
+                <tr>
+                    <td>
+                        <i class="fas fa-file-alt me-2 text-muted"></i>
+                        {{ doc.original_filename }}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ doc.status }}">
+                            {{ doc.status.title() }}
+                        </span>
+                    </td>
+                    <td>{{ doc.vendor_name or 'Unknown' }}</td>
+                    <td>{{ doc.total_amount | currency if doc.total_amount else 'N/A' }}</td>
+                    <td>{{ doc.upload_date | datetime }}</td>
+                    <td>
+                        <a href="{{ url_for('web.document_detail', doc_id=doc.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="text-center mt-3">
+        <a href="{{ url_for('web.documents_list') }}" class="btn btn-outline-primary">
+            View All Documents <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <h5>No documents yet</h5>
+        <p class="text-muted">Upload your first document to get started!</p>
+        <a href="{{ url_for('web.upload_page') }}" class="btn btn-primary">
+            <i class="fas fa-cloud-upload-alt me-2"></i>
+            Upload Document
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

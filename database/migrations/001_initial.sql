@@ -1,4 +1,6 @@
 # database/migrations/001_initial.sql
+
+-- Core Documents Table
 CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     filename VARCHAR(255) NOT NULL,
@@ -16,190 +18,277 @@ CREATE TABLE IF NOT EXISTS documents (
     
     -- Extracted Data
     vendor_name VARCHAR(255),
+    vendor_address TEXT,
+    vendor_tax_id VARCHAR(50),
     invoice_number VARCHAR(100),
     invoice_date DATETIME,
+    due_date DATETIME,
     total_amount REAL,
-    currency VARCHAR(10),
+    tax_amount REAL,
+    subtotal_amount REAL,
+    currency VARCHAR(10) DEFAULT 'USD',
     
     -- Processing metadata
     processing_error TEXT,
-    extraction_method VARCHAR(50)
+    extraction_method VARCHAR(50),
+    processing_duration REAL,
+    retry_count INTEGER DEFAULT 0,
+    
+    -- BigCapital integration
+    bigcapital_id INTEGER,
+    bigcapital_status VARCHAR(50),
+    bigcapital_sync_date DATETIME,
+    bigcapital_error TEXT,
+    
+    -- Audit fields
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Invoice Line Items Table
+CREATE TABLE IF NOT EXISTS document_line_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL,
+    line_number INTEGER NOT NULL,
+    description TEXT,
+    quantity REAL,
+    unit_price REAL,
+    line_total REAL,
+    tax_rate REAL,
+    tax_amount REAL,
+    product_code VARCHAR(100),
+    unit_of_measure VARCHAR(50),
+    
+    -- BigCapital mapping
+    bigcapital_item_id INTEGER,
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
+
+-- Processing Queue/Jobs Table
+CREATE TABLE IF NOT EXISTS processing_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL,
+    job_type VARCHAR(50) NOT NULL, -- 'ocr', 'extraction', 'bigcapital_sync'
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'processing', 'completed', 'failed'
+    priority INTEGER DEFAULT 0,
+    
+    -- Job data
+    job_data TEXT, -- JSON data for job parameters
+    result_data TEXT, -- JSON data for job results
+    error_message TEXT,
+    
+    -- Timing
+    queued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    started_at DATETIME,
+    completed_at DATETIME,
+    processing_duration REAL,
+    
+    -- Retry logic
+    retry_count INTEGER DEFAULT 0,
+    max_retries INTEGER DEFAULT 3,
+    next_retry_at DATETIME,
+    
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
+
+-- Processing Statistics
 CREATE TABLE IF NOT EXISTS processing_stats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date DATE DEFAULT (DATE('now')),
     documents_processed INTEGER DEFAULT 0,
     successful_extractions INTEGER DEFAULT 0,
     failed_extractions INTEGER DEFAULT 0,
-    avg_processing_time REAL
+    avg_processing_time REAL,
+    avg_ocr_confidence REAL,
+    total_file_size INTEGER DEFAULT 0,
+    
+    -- BigCapital sync stats
+    bigcapital_syncs INTEGER DEFAULT 0,
+    successful_syncs INTEGER DEFAULT 0,
+    failed_syncs INTEGER DEFAULT 0,
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(date)
 );
 
+-- Configuration Storage Table
+CREATE TABLE IF NOT EXISTS system_config (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    config_key VARCHAR(100) NOT NULL UNIQUE,
+    config_value TEXT,
+    config_type VARCHAR(50) DEFAULT 'string', -- 'string', 'integer', 'float', 'boolean', 'json'
+    description TEXT,
+    is_sensitive BOOLEAN DEFAULT FALSE,
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Sessions Table (for web interface)
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id VARCHAR(255) NOT NULL UNIQUE,
+    session_data TEXT, -- JSON session data
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_accessed DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL
+);
+
+-- Document Processing Log
+CREATE TABLE IF NOT EXISTS processing_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER,
+    job_id INTEGER,
+    level VARCHAR(20) NOT NULL, -- 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
+    message TEXT NOT NULL,
+    details TEXT, -- JSON additional details
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES processing_jobs(id) ON DELETE CASCADE
+);
+
+-- Vendor Master Data
+CREATE TABLE IF NOT EXISTS vendors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255) NOT NULL,
+    normalized_name VARCHAR(255), -- For matching similar vendor names
+    address TEXT,
+    tax_id VARCHAR(50),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    
+    -- BigCapital integration
+    bigcapital_vendor_id INTEGER,
+    
+    -- Statistics
+    document_count INTEGER DEFAULT 0,
+    total_amount REAL DEFAULT 0.0,
+    last_invoice_date DATETIME,
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(normalized_name)
+);
+
+-- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_documents_status ON documents(status);
 CREATE INDEX IF NOT EXISTS idx_documents_upload_date ON documents(upload_date);
+CREATE INDEX IF NOT EXISTS idx_documents_vendor ON documents(vendor_name);
+CREATE INDEX IF NOT EXISTS idx_documents_invoice_date ON documents(invoice_date);
+CREATE INDEX IF NOT EXISTS idx_documents_bigcapital_status ON documents(bigcapital_status);
+
+CREATE INDEX IF NOT EXISTS idx_line_items_document ON document_line_items(document_id);
+CREATE INDEX IF NOT EXISTS idx_line_items_product ON document_line_items(product_code);
+
+CREATE INDEX IF NOT EXISTS idx_jobs_status ON processing_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_jobs_type ON processing_jobs(job_type);
+CREATE INDEX IF NOT EXISTS idx_jobs_queued ON processing_jobs(queued_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_priority ON processing_jobs(priority DESC);
+CREATE INDEX IF NOT EXISTS idx_jobs_document ON processing_jobs(document_id);
+
 CREATE INDEX IF NOT EXISTS idx_processing_stats_date ON processing_stats(date);
 
-# config.ini.example
-[database]
-type = sqlite
-path = data/middleware.db
+CREATE INDEX IF NOT EXISTS idx_sessions_id ON user_sessions(session_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON user_sessions(expires_at);
 
-[ocr]
-language = eng
-confidence_threshold = 60
-dpi = 300
+CREATE INDEX IF NOT EXISTS idx_processing_log_document ON processing_log(document_id);
+CREATE INDEX IF NOT EXISTS idx_processing_log_job ON processing_log(job_id);
+CREATE INDEX IF NOT EXISTS idx_processing_log_level ON processing_log(level);
+CREATE INDEX IF NOT EXISTS idx_processing_log_created ON processing_log(created_at);
 
-[processing]
-upload_folder = uploads
-max_file_size = 10485760
-allowed_extensions = pdf,png,jpg,jpeg,tiff
+CREATE INDEX IF NOT EXISTS idx_vendors_name ON vendors(normalized_name);
+CREATE INDEX IF NOT EXISTS idx_vendors_bigcapital ON vendors(bigcapital_vendor_id);
 
-[web_interface]
-host = 0.0.0.0
-port = 5000
-debug = false
-secret_key = your-secret-key-change-in-production
+-- Insert default configuration values
+INSERT OR IGNORE INTO system_config (config_key, config_value, config_type, description) VALUES
+('ocr_confidence_threshold', '60', 'integer', 'Minimum OCR confidence threshold'),
+('max_retry_attempts', '3', 'integer', 'Maximum retry attempts for failed jobs'),
+('processing_timeout', '300', 'integer', 'Processing timeout in seconds'),
+('bigcapital_api_url', '', 'string', 'BigCapital API base URL'),
+('bigcapital_sync_enabled', 'false', 'boolean', 'Enable BigCapital synchronization'),
+('auto_process_uploads', 'true', 'boolean', 'Automatically process uploaded documents'),
+('cleanup_processed_files', 'false', 'boolean', 'Delete original files after successful processing'),
+('max_file_age_days', '90', 'integer', 'Maximum age in days before archiving old files'),
+('webhook_enabled', 'false', 'boolean', 'Enable webhook notifications'),
+('webhook_url', '', 'string', 'Webhook notification URL');
 
-[logging]
-level = INFO
-file = logs/middleware.log
+-- Create triggers for updated_at timestamps
+CREATE TRIGGER IF NOT EXISTS update_documents_timestamp 
+    AFTER UPDATE ON documents
+    FOR EACH ROW
+    BEGIN
+        UPDATE documents SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END;
 
-# .env.example
-# Environment variables for development
-FLASK_ENV=development
-FLASK_DEBUG=True
-SECRET_KEY=dev-secret-key-change-in-production
-DATABASE_URL=sqlite:///data/middleware.db
+CREATE TRIGGER IF NOT EXISTS update_vendors_timestamp 
+    AFTER UPDATE ON vendors
+    FOR EACH ROW
+    BEGIN
+        UPDATE vendors SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END;
 
-# scripts/init.sh
-#!/bin/bash
+CREATE TRIGGER IF NOT EXISTS update_config_timestamp 
+    AFTER UPDATE ON system_config
+    FOR EACH ROW
+    BEGIN
+        UPDATE system_config SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    END;
 
-# Paperless-BigCapital Middleware Initialization Script
+-- Create triggers for vendor statistics
+CREATE TRIGGER IF NOT EXISTS update_vendor_stats_on_insert
+    AFTER INSERT ON documents
+    FOR EACH ROW
+    WHEN NEW.vendor_name IS NOT NULL
+    BEGIN
+        INSERT OR IGNORE INTO vendors (name, normalized_name) 
+        VALUES (NEW.vendor_name, LOWER(TRIM(NEW.vendor_name)));
+        
+        UPDATE vendors 
+        SET document_count = document_count + 1,
+            total_amount = total_amount + COALESCE(NEW.total_amount, 0),
+            last_invoice_date = CASE 
+                WHEN NEW.invoice_date > last_invoice_date OR last_invoice_date IS NULL 
+                THEN NEW.invoice_date 
+                ELSE last_invoice_date 
+            END
+        WHERE normalized_name = LOWER(TRIM(NEW.vendor_name));
+    END;
 
-echo "Initializing Paperless-BigCapital Middleware..."
+-- Views for common queries
+CREATE VIEW IF NOT EXISTS document_summary AS
+SELECT 
+    d.*,
+    COUNT(li.id) as line_item_count,
+    COALESCE(SUM(li.line_total), 0) as calculated_total,
+    v.bigcapital_vendor_id
+FROM documents d
+LEFT JOIN document_line_items li ON d.id = li.document_id
+LEFT JOIN vendors v ON LOWER(TRIM(d.vendor_name)) = v.normalized_name
+GROUP BY d.id;
 
-# Create necessary directories
-echo "Creating directories..."
-mkdir -p data
-mkdir -p uploads
-mkdir -p logs
-mkdir -p sample_documents
+CREATE VIEW IF NOT EXISTS processing_queue_view AS
+SELECT 
+    pj.*,
+    d.filename,
+    d.original_filename,
+    d.status as document_status
+FROM processing_jobs pj
+JOIN documents d ON pj.document_id = d.id
+WHERE pj.status IN ('pending', 'processing')
+ORDER BY pj.priority DESC, pj.queued_at ASC;
 
-# Copy configuration files if they don't exist
-if [ ! -f "config.ini" ]; then
-    echo "Creating config.ini from template..."
-    cp config.ini.example config.ini
-fi
+-- Sample data for testing (optional)
+-- INSERT INTO system_config (config_key, config_value, config_type, description) VALUES
+-- ('test_mode', 'true', 'boolean', 'Enable test mode for development');
 
-if [ ! -f ".env" ]; then
-    echo "Creating .env from template..."
-    cp .env.example .env
-fi
-
-# Initialize database
-echo "Initializing database..."
-python3 -c "
-from config.settings import Config
-from database.connection import DatabaseManager
-from database.models import Base
-
-config = Config()
-db_manager = DatabaseManager(config)
-print('Database initialized successfully!')
-"
-
-# Set permissions
-echo "Setting permissions..."
-chmod 755 uploads
-chmod 755 logs
-chmod 755 data
-
-echo "Initialization complete!"
-echo ""
-echo "Next steps:"
-echo "1. Edit config.ini with your settings"
-echo "2. Install dependencies: pip install -r requirements.txt"
-echo "3. Run the application: ./scripts/run.sh"
-
-# scripts/run.sh
-#!/bin/bash
-
-# Paperless-BigCapital Middleware Run Script
-
-echo "Starting Paperless-BigCapital Middleware..."
-
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "Virtual environment not found. Creating..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Install/update dependencies
-echo "Installing dependencies..."
-pip install -r requirements.txt
-
-# Check if config exists
-if [ ! -f "config.ini" ]; then
-    echo "Config file not found. Running initialization..."
-    ./scripts/init.sh
-fi
-
-# Run the application
-echo "Starting Flask application..."
-python -m web.app
-
-# docker/Dockerfile
-FROM python:3.11-slim
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-eng \
-    poppler-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
-
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Create necessary directories
-RUN mkdir -p data uploads logs
-
-# Set permissions
-RUN chmod +x scripts/*.sh
-
-# Initialize database
-RUN python -c "from config.settings import Config; from database.connection import DatabaseManager; config = Config(); db_manager = DatabaseManager(config)"
-
-# Expose port
-EXPOSE 5000
-
-# Run application
-CMD ["python", "-m", "web.app"]
-
-# docker/docker-compose.yml
-version: '3.8'
-
-services:
-  paperless-bigcapital:
-    build: 
-      context: ..
-      dockerfile: docker/Dockerfile
-    ports:
-      - "5000:5000"
-    volumes:
-      - ../uploads:/app/uploads
-      - ../data:/app/data
-      - ../logs:/app/logs
-      - ../config.ini:/app/config.ini
-    environment:
-      - FLASK_ENV=production
+PRAGMA foreign_keys = ON;
