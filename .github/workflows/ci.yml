@@ -27,7 +27,7 @@ jobs:
     - name: Run Tests in Docker Container
       run: |
         docker run --rm \
-          --entrypoint /bin/bash \ 
+          --entrypoint /bin/bash \
           -v ${{ github.workspace }}:/app \
           -w /app \
           simplified-paperless-bigcapital-middleware \
