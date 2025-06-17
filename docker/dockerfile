@@ -1,6 +1,9 @@
 # Use official Python image with system dependencies
 FROM python:3.11-slim
 
+# install bash
+RUN apt-get update && apt-get install -y bash
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
