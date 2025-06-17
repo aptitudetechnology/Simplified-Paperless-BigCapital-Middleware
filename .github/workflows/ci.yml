@@ -22,12 +22,12 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Build Docker Image
-      run: docker build -t Simplified-Paperless-BigCapital-Middleware -f docker/Dockerfile .
+      run: docker build -t simplified-paperless-bigcapital-middleware -f docker/Dockerfile .
 
     - name: Run Tests in Docker Container
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/app \
           -w /app \
-          Simplified-Paperless-BigCapital-Middleware \
+          simplified-paperless-bigcapital-middleware \
           /bin/bash -c "pip install pytest && pytest"
