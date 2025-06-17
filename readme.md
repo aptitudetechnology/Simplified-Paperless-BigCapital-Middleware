@@ -1,9 +1,24 @@
-Simplified Paperless-BigCapital Middleware - Phase 1 Instructions
-Overview
+# Paperless-BigCapital Middleware - Phase 1
 
-Build a minimal Flask application with Tesseract OCR for document processing, SQLite database, and basic testing. This eliminates the complexity of Paperless-NGX integration while maintaining the existing directory structure.
-Directory Structure (Maintain Existing)
+A minimal Flask application with Tesseract OCR for document processing, featuring automatic invoice data extraction and web-based management interface.
 
+## Overview
+
+This middleware processes uploaded invoices and receipts using OCR technology to extract structured data. Built with Flask, Tesseract OCR, and SQLite for simplicity and ease of deployment.
+
+## Features
+
+- 📄 **Document Upload**: Web interface for uploading PDF and image files
+- 🔍 **OCR Processing**: Tesseract-powered text extraction from documents
+- 📊 **Data Extraction**: Automatic parsing of invoice data (vendor, amount, date, etc.)
+- 💾 **Database Storage**: SQLite database for document metadata and extracted data
+- 🌐 **Web Dashboard**: View processed documents and extraction results
+- 📈 **Statistics**: Processing metrics and success rates
+- 🐳 **Docker Support**: Containerized deployment
+
+## Directory Structure
+
+```
 paperless-bigcapital-middleware/
 ├── config/
 │   ├── __init__.py
@@ -11,9 +26,9 @@ paperless-bigcapital-middleware/
 │   └── config.ini.example   # Template configuration file
 ├── core/
 │   ├── __init__.py
-│   ├── ocr_processor.py     # NEW: Tesseract OCR processing
-│   ├── text_extractor.py    # NEW: Extract invoice data from OCR text
-│   └── processor.py         # Main processing logic (simplified)
+│   ├── ocr_processor.py     # Tesseract OCR processing
+│   ├── text_extractor.py    # Extract invoice data from OCR text
+│   └── processor.py         # Main processing logic
 ├── database/
 │   ├── __init__.py
 │   ├── models.py           # SQLAlchemy models (SQLite compatible)
@@ -24,7 +39,7 @@ paperless-bigcapital-middleware/
 │   ├── __init__.py
 │   ├── app.py             # Flask application
 │   ├── routes.py          # API endpoints and web routes
-│   ├── templates/         # NEW: HTML templates
+│   ├── templates/         # HTML templates
 │   │   ├── index.html     # File upload interface
 │   │   └── results.html   # OCR results display
 │   └── static/            # Static web assets
@@ -39,14 +54,14 @@ paperless-bigcapital-middleware/
 │   ├── __init__.py
 │   ├── conftest.py        # Pytest fixtures
 │   ├── test_core.py       # Core functionality tests
-│   ├── test_ocr.py        # NEW: OCR processing tests
+│   ├── test_ocr.py        # OCR processing tests
 │   ├── test_database.py   # Database tests
 │   └── test_web.py        # Web interface tests
-├── uploads/               # NEW: Directory for uploaded files
-├── sample_documents/      # NEW: Test PDFs/images for development
+├── uploads/               # Directory for uploaded files
+├── sample_documents/      # Test PDFs/images for development
 ├── docker/
-│   ├── Dockerfile         # Simplified Dockerfile
-│   └── docker-compose.yml # Minimal compose file
+│   ├── Dockerfile         # Application Dockerfile
+│   └── docker-compose.yml # Docker Compose configuration
 ├── scripts/
 │   ├── init.sh           # Database initialization script
 │   └── run.sh            # Application startup script
@@ -56,57 +71,91 @@ paperless-bigcapital-middleware/
 ├── .env.example         # Environment variables template
 ├── .gitignore
 └── README.md
+```
 
-Phase 1 Requirements
-Core Functionality
+## Prerequisites
 
-    File Upload Interface
-        Simple web form to upload PDF/image files
-        Display uploaded files list
-        Show processing status
-    OCR Processing
-        Use Tesseract OCR to extract text from uploaded documents
-        Support PDF and common image formats (PNG, JPG, TIFF)
-        Store OCR results in database
-    Text Extraction
-        Parse OCR text to extract invoice/receipt data:
-            Vendor/supplier name
-            Invoice number
-            Date
-            Total amount
-            Line items (if possible)
-        Use regex patterns and text parsing techniques
-    Database Storage
-        SQLite database for simplicity
-        Store document metadata and extracted data
-        Track processing status and errors
-    Web Interface
-        Dashboard showing recent documents
-        View OCR results and extracted data
-        Simple statistics (documents processed, success rate)
+### System Dependencies
 
-Technical Requirements
-Dependencies (requirements.txt)
+- Python 3.11+
+- Tesseract OCR
+- Poppler utilities (for PDF processing)
 
-Flask==2.3.3
-SQLAlchemy==2.0.21
-pytesseract==0.3.10
-Pillow==10.0.1
-PyPDF2==3.0.1
-pdf2image==1.16.3
-python-dotenv==1.0.0
-pytest==7.4.2
-pytest-flask==1.2.1
+### Installation
 
-System Dependencies
+#### Ubuntu/Debian
+```bash
+sudo apt-get update
+sudo apt-get install tesseract-ocr poppler-utils
+```
 
-    Tesseract OCR
-    Poppler (for PDF processing)
+#### macOS
+```bash
+brew install tesseract poppler
+```
 
-Configuration (config.ini)
+#### Windows
+- Download and install Tesseract from [GitHub releases](https://github.com/UB-Mannheim/tesseract/wiki)
+- Download Poppler from [releases page](https://github.com/oschwartz10612/poppler-windows/releases)
 
-ini
+## Quick Start
 
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd paperless-bigcapital-middleware
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure the application**
+   ```bash
+   cp config.ini.example config.ini
+   cp .env.example .env
+   # Edit config.ini with your settings
+   ```
+
+5. **Initialize database**
+   ```bash
+   ./scripts/init.sh
+   ```
+
+6. **Run the application**
+   ```bash
+   ./scripts/run.sh
+   # Or directly: python -m web.app
+   ```
+
+7. **Access the web interface**
+   - Open your browser to `http://localhost:5000`
+   - Upload documents and view results
+
+### Docker Deployment
+
+1. **Build and run with Docker Compose**
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Access the application**
+   - Web interface: `http://localhost:5000`
+
+## Configuration
+
+### Main Configuration (`config.ini`)
+
+```ini
 [database]
 type = sqlite
 path = data/middleware.db
@@ -130,134 +179,132 @@ secret_key = your-secret-key-here
 [logging]
 level = INFO
 file = logs/middleware.log
+```
 
-Implementation Tasks
-1. Database Models (database/models.py)
+## API Endpoints
 
-Create SQLAlchemy models for:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Upload interface |
+| POST | `/upload` | Handle file uploads |
+| GET | `/documents` | List processed documents |
+| GET | `/document/<id>` | View document details |
+| GET | `/api/stats` | Processing statistics (JSON) |
 
-    Document (filename, upload_date, file_path, processing_status)
-    ExtractedData (document_id, vendor_name, invoice_number, date, total_amount)
-    ProcessingLog (document_id, step, status, error_message, timestamp)
+## Data Extraction
 
-2. OCR Processor (core/ocr_processor.py)
+The system automatically extracts the following information from documents:
 
-    Function to process PDF/images with Tesseract
-    Handle different file formats
-    Return OCR text with confidence scores
+- **Vendor/Supplier Name**: Company or individual issuing the invoice
+- **Invoice Number**: Unique identifier for the document
+- **Date**: Invoice or receipt date
+- **Total Amount**: Final amount due or paid
+- **Line Items**: Individual products/services (when detectable)
 
-3. Text Extractor (core/text_extractor.py)
+## Testing
 
-    Parse OCR text using regex patterns
-    Extract structured data from unstructured text
-    Handle common invoice/receipt formats
+Run the complete test suite:
 
-4. Web Routes (web/routes.py)
+```bash
+pytest
+```
 
-    GET / - Upload interface
-    POST /upload - Handle file uploads
-    GET /documents - List processed documents
-    GET /document/<id> - View document details
-    GET /api/stats - Processing statistics JSON
+Run specific test categories:
 
-5. Templates (web/templates/)
+```bash
+# OCR processing tests
+pytest tests/test_ocr.py
 
-    Simple HTML templates with basic styling
-    File upload form
-    Results display
-    Document list
+# Database tests
+pytest tests/test_database.py
 
-6. Tests (tests/)
+# Web interface tests
+pytest tests/test_web.py
+```
 
-    Unit tests for OCR processing
-    Database model tests
-    Web interface tests
-    Integration tests with sample documents
+## Development
 
-Docker Setup
-Dockerfile
+### Adding New File Types
 
-dockerfile
+1. Update `allowed_extensions` in `config.ini`
+2. Modify `core/ocr_processor.py` to handle the new format
+3. Add test cases in `tests/test_ocr.py`
 
-FROM python:3.11-slim
+### Improving Data Extraction
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    poppler-utils \
-    && rm -rf /var/lib/apt/lists/*
+1. Edit regex patterns in `core/text_extractor.py`
+2. Add new extraction rules for specific document types
+3. Test with sample documents in `sample_documents/`
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+## Troubleshooting
 
-COPY . .
-RUN mkdir -p uploads logs data
+### Common Issues
 
-EXPOSE 5000
-CMD ["python", "-m", "web.app"]
+**OCR not working**
+- Ensure Tesseract is installed and in PATH
+- Check OCR language packs: `tesseract --list-langs`
 
-docker-compose.yml (Minimal)
+**PDF processing fails**
+- Verify Poppler is installed
+- Check file permissions in uploads directory
 
-yaml
+**Database errors**
+- Ensure `data/` directory exists and is writable
+- Run database initialization script
 
-version: '3.8'
-services:
-  middleware:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./uploads:/app/uploads
-      - ./data:/app/data
-      - ./logs:/app/logs
-    environment:
-      - FLASK_ENV=development
+### Logging
 
-Success Criteria
+Application logs are stored in `logs/middleware.log`. Adjust logging level in `config.ini`:
 
-    File upload works - Can upload PDF/image files through web interface
-    OCR processing works - Tesseract successfully extracts text from documents
-    Data extraction works - Can parse basic invoice information from OCR text
-    Database storage works - Data is properly stored in SQLite
-    Web interface works - Can view uploaded documents and extracted data
-    Tests pass - Basic test suite validates core functionality
-    Docker builds and runs - Container starts without errors
+```ini
+[logging]
+level = DEBUG  # For detailed debugging
+```
 
-Sample Test Documents
+## Dependencies
 
-Include in sample_documents/:
+### Python Packages
 
-    Simple invoice PDF
-    Receipt image (PNG/JPG)
-    Multi-page invoice PDF
+- **Flask 2.3.3**: Web framework
+- **SQLAlchemy 2.0.21**: Database ORM
+- **pytesseract 0.3.10**: Tesseract OCR wrapper
+- **Pillow 10.0.1**: Image processing
+- **PyPDF2 3.0.1**: PDF text extraction
+- **pdf2image 1.16.3**: PDF to image conversion
+- **python-dotenv 1.0.0**: Environment variable management
+- **pytest 7.4.2**: Testing framework
 
-Development Workflow
+## Roadmap
 
-    Create minimal Flask app with file upload
-    Add Tesseract OCR integration
-    Implement basic data extraction
-    Add database models and storage
-    Create web interface for viewing results
-    Add comprehensive tests
-    Containerize with Docker
+### Phase 2 (Planned)
+- PostgreSQL database upgrade
+- Enhanced data extraction algorithms
+- Batch processing capabilities
 
-Next Phase Preview
+### Phase 3 (Planned)
+- BigCapital API integration
+- Automated data synchronization
+- Advanced document classification
 
-Once Phase 1 is working:
+### Phase 4 (Future)
+- File system monitoring
+- Machine learning-based extraction
+- Multi-language OCR support
 
-    Phase 2: Upgrade to PostgreSQL
-    Phase 3: Add BigCapital API integration (mock first)
-    Phase 4: Add file watching/automated processing
-    Phase 5: Consider Paperless-NGX integration or keep standalone
+## Contributing
 
-Key Points for Implementation
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-    Start with the simplest possible version that works
-    Focus on one component at a time
-    Use SQLite to avoid database complexity
-    Test with real sample documents
-    Keep error handling simple but present
-    Make it easy to run locally for development
-    Ensure Docker setup is minimal and reliable
+## License
 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- Create an issue for bugs or feature requests
+- Check the troubleshooting section for common problems
+- Review the test suite for usage examples
