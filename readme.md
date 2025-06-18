@@ -40,8 +40,9 @@ paperless-bigcapital-middleware/
 │   ├── app.py             # Flask application
 │   ├── routes.py          # API endpoints and web routes
 │   ├── templates/         # HTML templates
-│   │   ├── index.html     # File upload interface
-│   │   └── results.html   # OCR results display
+|   |   |-- 404.html
+│   │   ├── base.html     # File upload interface
+│   │   └── dashboard.html   # OCR results display
 │   └── static/            # Static web assets
 │       ├── css/
 │       │   └── style.css
