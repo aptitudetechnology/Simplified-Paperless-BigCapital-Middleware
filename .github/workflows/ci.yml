@@ -44,6 +44,6 @@ jobs:
         run: |
           # Replace 'your_docker_username' with your actual Docker Hub username
           # You might want to use a dynamic tag like latest, or a commit SHA
-          docker tag simplified-paperless-bigcapital-middleware your_docker_username/simplified-paperless-bigcapital-middleware:latest
+          docker tag simplified-paperless-bigcapital-middleware caston81/simplified-paperless-bigcapital-middleware:latest
           docker push your_docker_username/simplified-paperless-bigcapital-middleware:latest
       # --- END OF ADDED STEPS ---
