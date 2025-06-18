@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
-WORKDIR /web
+#WORKDIR /web
+WORKDIR web
 
 # Copy dependencies and source
 COPY requirements.txt .
