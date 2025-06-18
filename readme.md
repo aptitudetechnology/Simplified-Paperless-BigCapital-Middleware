@@ -89,14 +89,7 @@ sudo apt-get update
 sudo apt-get install tesseract-ocr poppler-utils
 ```
 
-#### macOS
-```bash
-brew install tesseract poppler
-```
 
-#### Windows
-- Download and install Tesseract from [GitHub releases](https://github.com/UB-Mannheim/tesseract/wiki)
-- Download Poppler from [releases page](https://github.com/oschwartz10612/poppler-windows/releases)
 
 ## Quick Start
 
