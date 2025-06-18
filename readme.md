@@ -4,7 +4,7 @@ A minimal Flask application with Tesseract OCR for document processing, featurin
 
 ## Overview
 
-This middleware processes uploaded invoices and receipts using OCR technology to extract structured data. Built with Flask, Tesseract OCR, and SQLite for simplicity and ease of deployment.
+This middleware processes uploaded invoices and receipts using OCR technology to extract structured data. We use a web dashboard power by with Flask, Tesseract OCR, and SQLite for simplicity and ease of deployment.
 
 ## Features
 
