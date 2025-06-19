@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
 
 # Set work directory
 #WORKDIR /web
-#WORKDIR /
-PYTHONPATH=/
+WORKDIR /
+#PYTHONPATH=/
 
 # Copy dependencies and source
 COPY requirements.txt .
