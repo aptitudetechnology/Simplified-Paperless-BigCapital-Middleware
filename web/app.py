@@ -6,6 +6,7 @@ from datetime import datetime
 import secrets
 
 from config.settings import Config
+#from config/settings.py import Config
 from database.connection import DatabaseManager
 from processing.document_processor import DocumentProcessor
 from web.routes import api, web, init_routes
