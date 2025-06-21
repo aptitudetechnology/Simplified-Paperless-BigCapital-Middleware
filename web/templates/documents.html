@@ -1,0 +1,120 @@
+<!-- templates/documents.html -->
+{% extends "base.html" %}
+
+{% block title %}Documents – {{ super() }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Documents</h1>
+
+<!-- Filters and buttons placeholder -->
+<!-- <div class="mb-3">
+  Add filter inputs or buttons here if needed
+</div> -->
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="selectAll"></th>
+      <th>Filename</th>
+      <th>Status</th>
+      <th>Type</th>
+      <th>Upload Date</th>
+      <th>Size</th>
+      <th>Confidence</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="documentsTable">
+    <!-- Rows will be inserted here by JS -->
+  </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Assuming you have helper functions like getFileIcon, getStatusBadgeClass, getConfidenceColor, formatFileSize
+  // and toggleSelection, processDocument, deleteDocument already defined somewhere else in your scripts
+
+  function renderDocuments(docs) {
+    const tbody = document.getElementById('documentsTable');
+
+    if (!Array.isArray(docs) || docs.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="8" class="text-center py-4">
+          <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+          <p class="text-muted">No documents found</p>
+          <a href="{{ url_for('web.upload_page') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Upload First Document
+          </a>
+        </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = docs.map(doc => {
+      const safeDate = new Date(doc.upload_date || Date.now());
+      const size = formatFileSize(doc.file_size || 0);
+      const score = doc.confidence_score;
+
+      return `
+      <tr class="${doc.status === 'error' ? 'table-danger' : ''}">
+        <td>
+          <input type="checkbox" name="documentSelect" value="${doc.id}" class="form-check-input"
+            onchange="toggleSelection('${doc.id}', this.checked)">
+        </td>
+        <td>
+          <div class="d-flex align-items-center">
+            <i class="fas ${getFileIcon(doc.filename || '')} me-2"></i>
+            <div>
+              <div class="fw-bold">${doc.filename || 'Unnamed'}</div>
+              ${(doc.original_filename && doc.original_filename !== doc.filename)
+                ? `<small class="text-muted">Original: ${doc.original_filename}</small>` : ''}
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="badge ${getStatusBadgeClass(doc.status)}">
+            ${(doc.status || 'unknown').charAt(0).toUpperCase() + (doc.status || '').slice(1)}
+          </span>
+        </td>
+        <td><span class="badge bg-secondary">${doc.document_type || 'Unknown'}</span></td>
+        <td>
+          <div>${safeDate.toLocaleDateString()}</div>
+          <small class="text-muted">${safeDate.toLocaleTimeString()}</small>
+        </td>
+        <td>${size}</td>
+        <td>${score != null
+          ? `<div class="progress" style="width:60px; height:20px;">
+              <div class="progress-bar ${getConfidenceColor(score)}" style="width:${score}%"
+                   title="${score}%"></div>
+            </div>`
+          : `<span class="text-muted">N/A</span>`}
+        </td>
+        <td>
+          <div class="btn-group" role="group" aria-label="Row actions">
+            <a href="/document/${doc.id}" class="btn btn-sm btn-outline-primary" title="View" aria-label="View Document ${doc.filename}">
+              <i class="fas fa-eye"></i>
+            </a>
+            <button class="btn btn-sm btn-outline-secondary" onclick="processDocument('${doc.id}')"
+                    title="Reprocess" aria-label="Reprocess Document">
+              <i class="fas fa-cog"></i>
+            </button>
+            <a href="/api/documents/${doc.id}/download" class="btn btn-sm btn-outline-success"
+               title="Download" aria-label="Download Document">
+              <i class="fas fa-download"></i>
+            </a>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteDocument('${doc.id}')"
+                    title="Delete" aria-label="Delete Document">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Call renderDocuments with empty array initially or load real data via fetch
+  document.addEventListener('DOMContentLoaded', () => {
+    renderDocuments([]); // replace [] with real fetched data to show actual documents
+  });
+</script>
+{% endblock %}
