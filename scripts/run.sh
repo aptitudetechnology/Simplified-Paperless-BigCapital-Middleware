@@ -6,9 +6,9 @@ echo "🚀 Starting Paperless-BigCapital Middleware..."
 export PYTHONPATH=/home/runner/workspace:$PYTHONPATH
 
 # Create necessary directories
-#mkdir -p logs
-#mkdir -p uploads
-#mkdir -p data
+mkdir -p logs
+mkdir -p uploads
+mkdir -p data
 
 echo "📁 Created necessary directories"
 
