@@ -1,6 +1,6 @@
 # core/__init__.py
 """
-Core modules for Paperless-BigCapital Middleware
+Core modules for simplified-paperless-bigcapital-middleware
 """
 
 from .ocr_processor import OCRProcessor, extract_text_from_file
