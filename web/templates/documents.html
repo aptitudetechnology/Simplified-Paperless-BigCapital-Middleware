@@ -58,9 +58,10 @@
         <td>${size}</td>
         <td>${score != null
           ? `<div class="progress" style="width:60px;height:20px">
-               <div class="progress-bar ${getConfidenceColor(score)}"
-                    style="width:${score}%%"
-                    title="${score}%%"></div></div>`
+    <div class="progress-bar ${getConfidenceColor(score)}"
+     style="width:${score}%"
+     title="${score}%"></div>
+</div>`
           : `<span class="text-muted">N/A</span>`}
         </td>
         <td>
