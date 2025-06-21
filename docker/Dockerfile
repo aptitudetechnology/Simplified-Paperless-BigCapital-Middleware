@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
 # Set work directory
 #WORKDIR /web
 WORKDIR /
-ENV PYTHONPATH="/:${PYTHONPATH}"
+#ENV PYTHONPATH="/:${PYTHONPATH}"
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Copy dependencies and source
 COPY requirements.txt .
