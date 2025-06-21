@@ -240,13 +240,13 @@ def upload_file():
         # For now, remove this block to prevent error, or add the table.
         # If auto_process_uploads is true, the processing will be triggered directly.
         # if config.getboolean('system', 'auto_process_uploads', fallback=True):
-        #     with db_manager.get_connection() as conn: # Use get_connection here
-        #         cursor = conn.cursor()
-        #         cursor.execute("""
-        #             INSERT INTO processing_jobs (document_id, job_type, status)
-        #             VALUES (?, 'ocr', 'pending')
-        #         """, [doc_id])
-        #         conn.commit()
+        #    with db_manager.get_connection() as conn: # Use get_connection here
+        #        cursor = conn.cursor()
+        #        cursor.execute("""
+        #            INSERT INTO processing_jobs (document_id, job_type, status)
+        #            VALUES (?, 'ocr', 'pending')
+        #        """, [doc_id])
+        #        conn.commit()
         
         # Start processing if enabled
         auto_process = request.form.get('auto_process', 'true').lower() == 'true'
@@ -258,5 +258,19 @@ def upload_file():
                 # Log error but don't fail the upload
                 logger.error(f"Processing error for doc {doc_id}: {e}")
         
+        # >>> FIX IS HERE <<<
         return jsonify({
             'success': True,
+            'document_id': doc_id,  # Add these lines back
+            'filename': unique_filename, # Add these lines back
+            'message': 'File uploaded successfully' # Add these lines back
+        }), 201 # Don't forget the HTTP status code
+        # >>> END FIX <<<
+        
+    except RequestEntityTooLarge:
+        # This will be caught by the app-level error handler in app.py
+        # You can still return a more specific message if desired, but app.py's handler takes precedence
+        return jsonify({'error': 'File too large'}), 413
+    except Exception as e:
+        logger.error(f'Upload failed: {str(e)}')
+        return jsonify({'error': f'Upload failed: {str(e)}'}), 500
