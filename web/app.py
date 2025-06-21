@@ -137,15 +137,34 @@ def setup_logging(app: Flask, config: Config):
     # Set Flask app logger
     app.logger.setLevel(getattr(logging, log_level.upper()))
 
+# web/app.py
+
+# ... (your existing imports and functions) ...
+
 def main():
     """Main entry point"""
-    # Load configuration
-    config = Config()
+    # Determine the path to the config.json file
+    # Get the directory of the current file (app.py)
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Create Flask app
-    app = create_app()
+    # Go up one level to the project root directory (from web/ to project_root/)
+    project_root = os.path.dirname(current_file_dir)
     
-    # Get web interface configuration
+    # Construct the path to config/config.json
+    config_file_path = os.path.join(project_root, 'config', 'config.json')
+
+    print(f"Attempting to load configuration from: {config_file_path}") # Debugging line
+
+    # Load configuration by passing the determined path
+    config = Config(config_file_path)
+    
+    # Create Flask app, passing the config object or the path again
+    # It's generally better to pass the config object if it's already loaded,
+    # or ensure create_app also gets the correct path.
+    # Given create_app expects config_path, let's pass the path.
+    app = create_app(config_file_path) # Pass the config_file_path to create_app
+
+    # Get web interface configuration (you can now use the 'config' object created above)
     host = config.get('web_interface', 'host', '0.0.0.0')
     port = int(config.get('web_interface', 'port', '5000'))
     debug = config.getboolean('web_interface', 'debug', False)
