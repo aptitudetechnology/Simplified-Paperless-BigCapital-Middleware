@@ -1,6 +1,6 @@
 # core/ocr_processor.py
 """
-OCR Processor for Paperless-BigCapital Middleware
+OCR Processor for simplified-paperless-bigcapital-middleware
 Handles Optical Character Recognition for document processing
 """
 
@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 class OCRProcessor:
     """
     OCR Processor for extracting text from documents and images
+    Used in simplified-paperless-bigcapital-middleware
     """
     
     def __init__(self, engine: str = 'tesseract', language: str = 'eng'):
