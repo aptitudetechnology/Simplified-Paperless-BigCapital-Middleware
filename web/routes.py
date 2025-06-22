@@ -234,7 +234,8 @@ def upload_file():
                 'file_path': filepath,
                 'file_size': file_info['size'],
                 'content_type': file_info['mime_type'],
-                'status': 'uploaded' # Set initial status
+               # 'status': 'uploaded' # Set initial status
+                'status': 'pending'
             }
         )
         
