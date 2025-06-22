@@ -3,7 +3,7 @@ Database connection management for the middleware application
 """
 import sqlite3
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from contextlib import contextmanager
 import logging
 
@@ -194,14 +194,14 @@ class DatabaseManager:
 
                 # Check if any rows were updated
                 if cursor.rowcount > 0:
-                    print(f"Updated document ID {doc_id} with {len(kwargs)} fields")
+                    logger.info(f"Updated document ID {doc_id} with {len(kwargs)} fields")
                     return True
                 else:
-                    print(f"No document found with ID {doc_id}")
+                    logger.warning(f"No document found with ID {doc_id}")
                     return False
 
         except sqlite3.Error as e:
-            print(f"Database error updating document {doc_id}: {e}")
+            logger.error(f"Database error updating document {doc_id}: {e}")
             return False
 
     def get_document(self, doc_id: int) -> Optional[Dict[str, Any]]:
@@ -218,7 +218,7 @@ class DatabaseManager:
                 return None
 
         except sqlite3.Error as e:
-            print(f"Database error getting document {doc_id}: {e}")
+            logger.error(f"Database error getting document {doc_id}: {e}")
             return None
 
     def list_documents(self, limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]:
@@ -253,4 +253,23 @@ class DatabaseManager:
         """Delete a document by ID"""
         try:
             with self.get_connection() as conn:
-                cursor =
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+                conn.commit()
+                
+                if cursor.rowcount > 0:
+                    logger.info(f"Deleted document ID {doc_id}")
+                    return True
+                else:
+                    logger.warning(f"No document found with ID {doc_id}")
+                    return False
+                    
+        except sqlite3.Error as e:
+            logger.error(f"Database error deleting document {doc_id}: {e}")
+            return False
+
+
+# For backward compatibility, you can also create aliases
+def get_database_manager(config=None):
+    """Factory function to create DatabaseManager instance"""
+    return DatabaseManager(config)
