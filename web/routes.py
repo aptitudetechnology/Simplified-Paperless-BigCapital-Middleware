@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import mimetypes
 from typing import Dict, Any, List
 import logging # Import logging
+import os
 
 from config.settings import Config
 from database.connection import DatabaseManager
@@ -21,7 +22,13 @@ web = Blueprint('web', __name__)
 # Global variables (will be injected by app.py)
 config: Config = None
 db_manager: DatabaseManager = None
-doc_processor: DocumentProcessor = None
+#doc_processor: DocumentProcessor = None
+
+# Process in background (in production, use Celery or similar)
+# Construct the file path from the upload folder and filename
+upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+file_path = os.path.join(upload_folder, unique_filename)
+doc_processor.process_document(file_path)
 
 # Logger for this module
 logger = logging.getLogger(__name__)
