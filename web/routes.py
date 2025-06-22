@@ -66,8 +66,8 @@ def index():
     try:
         # Use db_manager's specific methods or execute_query
         # db_manager.get_documents() fetches from 'documents' table
-        recent_docs = db_manager.get_documents(limit=10)
-        
+        recent_docs = db_manager.list_documents(limit=10) # Changed to list_documents as per DatabaseManager
+
         # db_manager.get_stats() fetches general stats
         stats = db_manager.get_stats()
 
@@ -84,8 +84,8 @@ def index():
         # Convert stats to a dictionary if it's a sqlite3.Row object
         # db_manager.get_stats() already returns a dict, so no change needed here.
         
-        return render_template('dashboard.html', 
-                               recent_docs=recent_docs, 
+        return render_template('dashboard.html',
+                               recent_docs=recent_docs,
                                stats=stats)
     except Exception as e:
         logger.error(f'Error loading dashboard: {str(e)}')
@@ -144,7 +144,7 @@ def documents_list():
         total_result = db_manager.execute_query(count_query, tuple(count_params))
         total = total_result[0][0] if total_result else 0 # Access the count value
 
-        return render_template('documents.html', 
+        return render_template('documents.html',
                                documents=documents,
                                page=page,
                                per_page=per_page,
@@ -227,31 +227,43 @@ def upload_file():
         file_info = get_file_info(filepath)
         
         # Insert document record using db_manager's method
-        doc_id = db_manager.insert_document(
-            filename=unique_filename,
-            original_filename=filename,
-            file_path=filepath,
-            file_size=file_info['size'],
-            content_type=file_info['mime_type'] # Ensure 'mime_type' is the column name if storing here
+        doc_id = db_manager.store_document( # Changed to store_document as per DatabaseManager update
+            {
+                'filename': unique_filename,
+                'original_filename': filename,
+                'file_path': filepath,
+                'file_size': file_info['size'],
+                'content_type': file_info['mime_type'],
+                'status': 'uploaded' # Set initial status
+            }
         )
         
-        # Start processing if enabled
-        auto_process = request.form.get('auto_process', 'true').lower() == 'true'
-        if auto_process and doc_processor: # Ensure doc_processor is initialized
-            try:
-                # Process document using the file path, not the doc_id
-                #doc_processor.process_document(filepath)
-                doc_processor.process_document_by_id(doc_id)
-            except Exception as e:
-                # Log error but don't fail the upload
-                logger.error(f"Processing error for doc {doc_id}: {e}")
-        
+        # Add this debugging to your upload route after saving the document
+        print(f"=== UPLOAD DEBUG ===")
+        print(f"Saved document with ID: {doc_id}")
+        print(f"Filepath: {filepath}")
+        print(f"About to call processor...")
+        # Check if document was actually saved
+        saved_doc = db_manager.get_document(doc_id)
+        if saved_doc:
+            print(f"Document in DB: ID={saved_doc['id']}, Status={saved_doc['status']}")
+        else:
+            print("ERROR: Document not found in database after saving!")
+        # Now call the processor
+        try:
+            doc_processor.process_document_by_id(doc_id)  # Use new method
+            print("Processor completed successfully")
+        except Exception as e:
+            print(f"Processor failed: {e}")
+        print("=== END DEBUG ===")
+
+        # Return success response...
         return jsonify({
             'success': True,
+            'message': 'Document uploaded and processing started',
             'document_id': doc_id,
-            'filename': unique_filename,
-            'message': 'File uploaded successfully'
-        }), 201
+            'filename': unique_filename # Added filename to response for clarity
+        }), 201 # Return 201 Created status code
         
     except RequestEntityTooLarge:
         # This will be caught by the app-level error handler in app.py
