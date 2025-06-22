@@ -32,6 +32,46 @@ class DocumentProcessor:
         
         self.logger.info(f"DocumentProcessor initialized with upload folder: {self.upload_folder}")
     
+    def get_file_info(self, file_path: str) -> Dict[str, Any]:
+        """
+        Get information about a file
+        
+        Args:
+            file_path: Path to the file
+            
+        Returns:
+            dict: File information including size, name, extension, etc.
+        """
+        try:
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"File not found: {file_path}")
+            
+            file_size = os.path.getsize(file_path)
+            filename = os.path.basename(file_path)
+            file_extension = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+            
+            return {
+                'filename': filename,
+                'file_path': file_path,
+                'file_size': file_size,
+                'extension': file_extension,
+                'is_allowed': self.is_allowed_file(filename),
+                'size_valid': file_size <= self.max_file_size,
+                'exists': True
+            }
+        except Exception as e:
+            self.logger.error(f"Error getting file info for {file_path}: {str(e)}")
+            return {
+                'filename': os.path.basename(file_path) if file_path else '',
+                'file_path': file_path,
+                'file_size': 0,
+                'extension': '',
+                'is_allowed': False,
+                'size_valid': False,
+                'exists': False,
+                'error': str(e)
+            }
+    
     def is_allowed_file(self, filename: str) -> bool:
         """
         Check if the file extension is allowed
