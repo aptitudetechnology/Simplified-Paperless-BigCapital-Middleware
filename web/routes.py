@@ -240,7 +240,8 @@ def upload_file():
         if auto_process and doc_processor: # Ensure doc_processor is initialized
             try:
                 # Process document using the file path, not the doc_id
-                doc_processor.process_document(filepath)
+                #doc_processor.process_document(filepath)
+                doc_processor.process_document_by_id(doc_id)
             except Exception as e:
                 # Log error but don't fail the upload
                 logger.error(f"Processing error for doc {doc_id}: {e}")
