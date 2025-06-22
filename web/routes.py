@@ -7,8 +7,7 @@ import json
 from datetime import datetime, timedelta
 import mimetypes
 from typing import Dict, Any, List
-import logging # Import logging
-import os
+import logging
 
 from config.settings import Config
 from database.connection import DatabaseManager
@@ -22,13 +21,7 @@ web = Blueprint('web', __name__)
 # Global variables (will be injected by app.py)
 config: Config = None
 db_manager: DatabaseManager = None
-#doc_processor: DocumentProcessor = None
-
-# Process in background (in production, use Celery or similar)
-# Construct the file path from the upload folder and filename
-upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
-file_path = os.path.join(upload_folder, unique_filename)
-doc_processor.process_document(file_path)
+doc_processor: DocumentProcessor = None
 
 # Logger for this module
 logger = logging.getLogger(__name__)
@@ -242,37 +235,22 @@ def upload_file():
             content_type=file_info['mime_type'] # Ensure 'mime_type' is the column name if storing here
         )
         
-        # 'processing_jobs' table does not exist in your DatabaseManager init.
-        # If you need job queuing, you must add this table.
-        # For now, remove this block to prevent error, or add the table.
-        # If auto_process_uploads is true, the processing will be triggered directly.
-        # if config.getboolean('system', 'auto_process_uploads', fallback=True):
-        #    with db_manager.get_connection() as conn: # Use get_connection here
-        #        cursor = conn.cursor()
-        #        cursor.execute("""
-        #            INSERT INTO processing_jobs (document_id, job_type, status)
-        #            VALUES (?, 'ocr', 'pending')
-        #        """, [doc_id])
-        #        conn.commit()
-        
         # Start processing if enabled
         auto_process = request.form.get('auto_process', 'true').lower() == 'true'
         if auto_process and doc_processor: # Ensure doc_processor is initialized
             try:
-                # Process in background (in production, use Celery or similar)
-                doc_processor.process_document(doc_id)
+                # Process document using the file path, not the doc_id
+                doc_processor.process_document(filepath)
             except Exception as e:
                 # Log error but don't fail the upload
                 logger.error(f"Processing error for doc {doc_id}: {e}")
         
-        # >>> FIX IS HERE <<<
         return jsonify({
             'success': True,
-            'document_id': doc_id,  # Add these lines back
-            'filename': unique_filename, # Add these lines back
-            'message': 'File uploaded successfully' # Add these lines back
-        }), 201 # Don't forget the HTTP status code
-        # >>> END FIX <<<
+            'document_id': doc_id,
+            'filename': unique_filename,
+            'message': 'File uploaded successfully'
+        }), 201
         
     except RequestEntityTooLarge:
         # This will be caught by the app-level error handler in app.py
