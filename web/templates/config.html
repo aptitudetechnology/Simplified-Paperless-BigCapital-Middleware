@@ -1,0 +1,177 @@
+{% extends "base.html" %} {# Assuming you have a base template for layout #}
+
+{% block title %}Configuration - Paperless-Bigcapital Middleware{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1 class="page-title">Paperless-Bigcapital Middleware</h1>
+        <p class="page-subtitle">Automated document processing and financial integration</p>
+        <div class="status-buttons">
+            <span class="status-dot stopped"></span> Stopped
+            <button class="btn btn-success start-btn">Start</button>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs custom-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('web.index') }}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('web.documents_list') }}">Documents</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('web.index') }}">Logs</a> {# Placeholder for now #}
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('web.configuration') }}">Configuration</a>
+        </li>
+    </ul>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flashes">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('web.configuration') }}">
+        <div class="card configuration-card">
+            <div class="card-header">
+                <h2>Paperless-NGX Configuration</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-6">
+                        <label for="paperless_ngx_api_url">API URL</label>
+                        <input type="text" class="form-control" id="paperless_ngx_api_url" name="paperless_ngx_api_url"
+                               value="{{ config.paperless_ngx.api_url | default('') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="paperless_ngx_api_token">API Token</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="paperless_ngx_api_token" name="paperless_ngx_api_token" value="">
+                            <div class="input-group-append">
+                                <span class="input-group-text toggle-password" data-target="paperless_ngx_api_token"><i class="fas fa-eye"></i></span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Leave blank to keep existing token.</small>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-6">
+                        <label for="paperless_ngx_invoice_tags">Invoice Tags</label>
+                        <input type="text" class="form-control" id="paperless_ngx_invoice_tags" name="paperless_ngx_invoice_tags"
+                               value="{{ config.paperless_ngx.invoice_tags | default('') }}">
+                        <small class="form-text text-muted">Comma-separated tags</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="paperless_ngx_receipt_tags">Receipt Tags</label>
+                        <input type="text" class="form-control" id="paperless_ngx_receipt_tags" name="paperless_ngx_receipt_tags"
+                               value="{{ config.paperless_ngx.receipt_tags | default('') }}">
+                        <small class="form-text text-muted">Comma-separated tags</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card configuration-card">
+            <div class="card-header">
+                <h2>Bigcapital Configuration</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-5">
+                        <label for="bigcapital_api_url">API URL</label>
+                        <input type="text" class="form-control" id="bigcapital_api_url" name="bigcapital_api_url"
+                               value="{{ config.bigcapital.api_url | default('') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="bigcapital_api_token">API Token</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="bigcapital_api_token" name="bigcapital_api_token" value="">
+                            <div class="input-group-append">
+                                <span class="input-group-text toggle-password" data-target="bigcapital_api_token"><i class="fas fa-eye"></i></span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Leave blank to keep existing token.</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="bigcapital_default_due_days">Default Due Days</label>
+                        <input type="number" class="form-control" id="bigcapital_default_due_days" name="bigcapital_default_due_days"
+                               value="{{ config.bigcapital.default_due_days | default(30) }}">
+                    </div>
+                </div>
+                <div class="form-group form-check mt-3">
+                    <input type="checkbox" class="form-check-input" id="bigcapital_auto_create_customers" name="bigcapital_auto_create_customers"
+                           {% if config.bigcapital.auto_create_customers %}checked{% endif %}>
+                    <label class="form-check-label" for="bigcapital_auto_create_customers">Auto-create customers</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card configuration-card">
+            <div class="card-header">
+                <h2>Processing Configuration</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <label for="processing_check_interval_seconds">Check Interval (seconds)</label>
+                        <input type="number" class="form-control" id="processing_check_interval_seconds" name="processing_check_interval_seconds"
+                               value="{{ config.processing.check_interval_seconds | default(300) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="processing_log_level">Log Level</label>
+                        <select class="form-control" id="processing_log_level" name="processing_log_level">
+                            {% for level in log_levels %}
+                                <option value="{{ level }}" {% if config.processing.log_level == level %}selected{% endif %}>{{ level }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="processing_processed_tag">Processed Tag</label>
+                        <input type="text" class="form-control" id="processing_processed_tag" name="processing_processed_tag"
+                               value="{{ config.processing.processed_tag | default('') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="processing_error_tag">Error Tag</label>
+                        <input type="text" class="form-control" id="processing_error_tag" name="processing_error_tag"
+                               value="{{ config.processing.error_tag | default('') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <button type="reset" class="btn btn-secondary">Reset</button>
+            <button type="submit" class="btn btn-primary save-btn">Save Configuration</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.toggle-password').forEach(function(toggle) {
+        toggle.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const passwordField = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
