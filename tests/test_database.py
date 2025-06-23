@@ -6,9 +6,11 @@ retrieval, and processing results.
 
 import pytest
 import sqlite3
-import os
+import os # <-- ADDED THIS LINE
+import tempfile # <-- ADDED THIS LINE
 from datetime import datetime
 from unittest.mock import patch, MagicMock
+from sqlalchemy import create_engine, inspect # Required for test_init_db if using SQLAlchemy engine directly
 
 # Attempt to import database functions and models
 try:
@@ -22,7 +24,11 @@ except ImportError:
     Base = None
     SessionLocal = None
     engine = None
-    Document = MagicMock() # Mock the Document and ProcessingResult classes
+    # Mock these if they are used in tests even when not fully implemented
+    # For now, if the import fails, some tests might just skip due to `pytest.skip`
+    # or fail with AttributeError if mocked objects are expected to have certain methods.
+    # We'll assume the basic structure exists for the tests that run.
+    Document = MagicMock()
     ProcessingResult = MagicMock()
 
 
@@ -30,34 +36,40 @@ except ImportError:
 def setup_database():
     """
     Module-scoped fixture to set up and tear down a temporary SQLite database
-    for testing.
+    for testing. This uses SQLAlchemy's engine and metadata.
     """
     if init_db is None or SessionLocal is None or engine is None:
-        pytest.skip("Database modules not fully implemented yet")
+        pytest.skip("Database modules not fully implemented yet for SQLAlchemy setup")
 
-    # Use a temporary in-memory database for speed and isolation
-    test_db_url = "sqlite:///./test_temp.db"
+    # Use a temporary file-based SQLite database for module scope
+    test_db_path = "./test_module_temp.db"
+    test_db_url = f"sqlite:///{test_db_path}"
+
     # Ensure the test DB file is clean before starting
-    if os.path.exists("./test_temp.db"):
-        os.remove("./test_temp.db")
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+    # Create a new engine for the test database
+    test_engine = create_engine(test_db_url)
 
     # Create tables
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=test_engine)
     
     # Yield control to tests
-    yield "sqlite:///./test_temp.db"
+    yield test_db_url
 
     # Teardown: close session and drop tables, then delete the file
-    Base.metadata.drop_all(bind=engine)
-    if os.path.exists("./test_temp.db"):
-        os.remove("./test_temp.db")
+    Base.metadata.drop_all(bind=test_engine)
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
 
 
 @pytest.fixture(scope="function")
 def test_db():
     """
     Function-scoped fixture to create a temporary database file for each test,
-    ensuring isolation. This is used when direct sqlite3.connect is needed.
+    ensuring isolation. This is used when direct sqlite3.connect is needed
+    for lower-level SQLite testing (e.g., CASCADE).
     """
     # Create a temporary file path for the SQLite database
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp_file:
@@ -93,7 +105,7 @@ def test_db():
         )
     ''')
     conn.commit()
-    conn.close()
+    conn.close() # Close connection after setup
 
     yield db_path
 
@@ -109,7 +121,7 @@ class TestDatabaseInitAndTeardown:
         if init_db is None or SessionLocal is None:
             pytest.skip("Database modules not fully implemented yet")
         
-        # init_db is called by setup_database
+        # init_db is called by setup_database fixture
         # Try to connect and list tables to verify
         test_engine = create_engine(setup_database)
         inspector = inspect(test_engine)
@@ -299,10 +311,12 @@ class TestDatabaseOperations:
     Test low-level database operations that might not directly use SQLAlchemy
     helpers, especially for features like CASCADE.
     """
-    import tempfile # Make sure tempfile is imported
-    import os # Make sure os is imported
-    import sqlite3 # Make sure sqlite3 is imported
-    from datetime import datetime # Make sure datetime is imported
+    # These imports are now at the top of the file, but leaving them here as a comment
+    # for clarity that they are needed for this class's context.
+    # import tempfile
+    # import os
+    # import sqlite3
+    # from datetime import datetime
 
     def test_delete_document(self, test_db):
         """Test deleting documents and verify cascade deletion of related processing results"""
