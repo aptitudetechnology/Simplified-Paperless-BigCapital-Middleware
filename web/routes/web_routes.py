@@ -1,3 +1,5 @@
+#web_routes.py
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 import logging
 from .utils import parse_extracted_data, get_dashboard_stats
