@@ -137,7 +137,7 @@ class DatabaseManager:
 import pytesseract
 from PIL import Image
 import pdf2image
-import PyPDF2
+import pypdf
 from pathlib import Path
 import tempfile
 import os
