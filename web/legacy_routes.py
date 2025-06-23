@@ -1,4 +1,4 @@
-# web/routes.py
+# web/legacy_routes.py
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
 from werkzeug.utils import secure_filename
 from werkzeug.exceptions import RequestEntityTooLarge
