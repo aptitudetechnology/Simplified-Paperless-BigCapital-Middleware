@@ -50,21 +50,21 @@ def create_app(config_path: str = None) -> Flask:
     # Initialize and register routes based on configuration
     #if USE_MODULAR_ROUTES:
         # New modular approach - create blueprints with factory functions
-       # api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
-       # web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
-       # config_blueprint = create_config_blueprint(config, db_manager, doc_processor)
+        # api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
+        # web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
+        # config_blueprint = create_config_blueprint(config, db_manager, doc_processor)
         
         # Register the created blueprints
-       # app.register_blueprint(api_blueprint)
-       # app.register_blueprint(web_blueprint)
-       # app.register_blueprint(config_blueprint)
+        # app.register_blueprint(api_blueprint)
+        # app.register_blueprint(web_blueprint)
+        # app.register_blueprint(config_blueprint)
 
     if USE_MODULAR_ROUTES:
-    # New modular approach - create blueprints with factory functions
+        # New modular approach - create blueprints with factory functions
         api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
         web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
-    
-    # Register the created blueprints (no separate config blueprint)
+        
+        # Register the created blueprints (no separate config blueprint)
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
         
@@ -140,79 +140,4 @@ def create_app(config_path: str = None) -> Flask:
     def internal_error(error):
         if request.path.startswith('/api/'):
             return jsonify({'error': 'Internal server error'}), 500
-        return render_template('errors/500.html'), 500
-    
-    @app.errorhandler(413)
-    def file_too_large(error):
-        if request.path.startswith('/api/'):
-            return jsonify({'error': 'File too large'}), 413
-        return render_template('errors/413.html'), 413
-    
-    return app
-
-def setup_logging(app: Flask, config: Config):
-    """Setup application logging"""
-    log_level = config.get('logging', 'level', 'INFO')
-    log_file = config.get('logging', 'file', 'logs/middleware.log')
-    
-    # Create logs directory
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    
-    # Configure logging
-    logging.basicConfig(
-        level=getattr(logging, log_level.upper()),
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
-    )
-    
-    # Set Flask app logger
-    app.logger.setLevel(getattr(logging, log_level.upper()))
-
-def main():
-    """Main entry point"""
-    # Determine the path to the config.json file
-    # Get the directory of the current file (app.py)
-    current_file_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Go up one level to the project root directory (from web/ to project_root/)
-    project_root = os.path.dirname(current_file_dir)
-    
-    # Construct the path to config/config.json
-    config_file_path = os.path.join(project_root, 'config', 'config.json')
-
-    print(f"Attempting to load configuration from: {config_file_path}") # Debugging line
-
-    # Load configuration by passing the determined path
-    config = Config(config_file_path)
-    
-    # Create Flask app, passing the config object or the path again
-    # It's generally better to pass the config object if it's already loaded,
-    # or ensure create_app also gets the correct path.
-    # Given create_app expects config_path, let's pass the path.
-    app = create_app(config_file_path) # Pass the config_file_path to create_app
-
-    # Get web interface configuration (you can now use the 'config' object created above)
-    host = config.get('web_interface', 'host', '0.0.0.0')
-    port = int(config.get('web_interface', 'port', '5000'))
-    debug = config.getboolean('web_interface', 'debug', False)
-    
-    # Log startup information
-    app.logger.info(f"Starting Paperless-BigCapital Middleware on {host}:{port}")
-    app.logger.info(f"Debug mode: {debug}")
-    app.logger.info(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
-    app.logger.info(f"Max file size: {app.config['MAX_CONTENT_LENGTH']} bytes")
-    
-    # Run the application
-    try:
-        app.run(host=host, port=port, debug=debug)
-    except KeyboardInterrupt:
-        app.logger.info("Application stopped by user")
-    except Exception as e:
-        app.logger.error(f"Application error: {e}")
-        raise
-
-if __name__ == '__main__':
-    main()
+        return render_template('errors/5
