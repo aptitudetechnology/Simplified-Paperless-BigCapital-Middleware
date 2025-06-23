@@ -487,6 +487,8 @@ class TestTemplateRendering:
         assert '{%' not in html  # Template logic should be processed
 
 
+
+
 class TestErrorHandling:
     """Test error handling in web interface"""
 
@@ -534,9 +536,16 @@ class TestErrorHandling:
 
     def test_500_error_handler(self, client):
         """Test 500 error handling"""
-        response = client.get('/error-test')
+        # --- THIS IS THE CHANGE ---
+        with client.application.app_context(): # <--- Add this context manager
+            response = client.get('/error-test')
+        # --- END OF CHANGE ---
         assert response.status_code == 500
+        # Optional: assert on the content of your 500 error page if it returns a specific string
+        assert b"Custom 500 page" in response.data
 
+
+# ... (rest of your file content) ...
 
 class TestSessionManagement:
     """Test session management functionality"""
