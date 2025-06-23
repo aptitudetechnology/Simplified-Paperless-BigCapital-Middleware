@@ -48,16 +48,25 @@ def create_app(config_path: str = None) -> Flask:
     doc_processor = DocumentProcessor(config, db_manager)
     
     # Initialize and register routes based on configuration
-    if USE_MODULAR_ROUTES:
+    #if USE_MODULAR_ROUTES:
         # New modular approach - create blueprints with factory functions
-        api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
-        web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
-        config_blueprint = create_config_blueprint(config, db_manager, doc_processor)
+       # api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
+       # web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
+       # config_blueprint = create_config_blueprint(config, db_manager, doc_processor)
         
         # Register the created blueprints
+       # app.register_blueprint(api_blueprint)
+       # app.register_blueprint(web_blueprint)
+       # app.register_blueprint(config_blueprint)
+
+    if USE_MODULAR_ROUTES:
+    # New modular approach - create blueprints with factory functions
+        api_blueprint = create_api_blueprint(config, db_manager, doc_processor)
+        web_blueprint = create_web_blueprint(config, db_manager, doc_processor)
+    
+    # Register the created blueprints (no separate config blueprint)
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
-        app.register_blueprint(config_blueprint)
         
         app.logger.info("Using modular route structure")
     else:
