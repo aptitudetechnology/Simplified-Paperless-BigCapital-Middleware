@@ -16,7 +16,7 @@ from database.connection import DatabaseManager
 from processing.document_processor import DocumentProcessor
 
 # Configuration flag to choose routing approach
-USE_MODULAR_ROUTES = True # Set to True to use new modular structure
+USE_MODULAR_ROUTES = False # Set to True to use new modular structure
 
 if USE_MODULAR_ROUTES:
     # New modular structure imports
