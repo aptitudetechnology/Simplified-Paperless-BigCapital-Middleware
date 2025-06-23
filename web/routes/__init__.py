@@ -7,7 +7,7 @@ import logging
 # Import route modules
 from .web_routes import create_web_blueprint
 from .api_routes import create_api_blueprint
-from .config_routes import create_config_blueprint
+#from .config_routes import create_config_blueprint
 
 logger = logging.getLogger(__name__)
 
