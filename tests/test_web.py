@@ -80,8 +80,8 @@ class TestFlaskApp:
         # If you expect specific blueprints to *always* be registered when `create_app` is used,
         # you might add more specific assertions here, e.g.:
         # if create_app is not None:
-        #     assert 'web_bp' in blueprint_names
-        #     assert 'api_bp' in blueprint_names
+        #    assert 'web_bp' in blueprint_names
+        #    assert 'api_bp' in blueprint_names
 
 
 class TestWebRoutes:
@@ -487,8 +487,6 @@ class TestTemplateRendering:
         assert '{%' not in html  # Template logic should be processed
 
 
-
-
 class TestErrorHandling:
     """Test error handling in web interface"""
 
@@ -498,6 +496,7 @@ class TestErrorHandling:
         app = Flask(__name__)
         app.config['TESTING'] = True
         app.config['SECRET_KEY'] = 'test-secret-key'
+        app.config['PROPAGATE_EXCEPTIONS'] = False # <--- ADDED THIS LINE
         
         @app.route('/error-test')
         def trigger_error():
@@ -536,16 +535,11 @@ class TestErrorHandling:
 
     def test_500_error_handler(self, client):
         """Test 500 error handling"""
-        # --- THIS IS THE CHANGE ---
-        with client.application.app_context(): # <--- Add this context manager
-            response = client.get('/error-test')
-        # --- END OF CHANGE ---
+        # NO LONGER NEED THE 'with client.application.app_context():' BLOCK HERE
+        response = client.get('/error-test')
         assert response.status_code == 500
-        # Optional: assert on the content of your 500 error page if it returns a specific string
         assert b"Custom 500 page" in response.data
 
-
-# ... (rest of your file content) ...
 
 class TestSessionManagement:
     """Test session management functionality"""
