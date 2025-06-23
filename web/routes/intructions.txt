@@ -33,3 +33,58 @@ Please provide the specific code changes needed in `app.py` and any minimal chan
 ---
 
 This should give you a focused response on exactly what you need to fix the blueprint naming issue while maintaining your seamless switching capability.
+
+
+
+
+----
+
+
+Absolutely! You're right - changing templates can be risky and create maintenance issues. Here's a better approach:
+Solution: Make the new modular routes match the legacy route endpoint names exactly
+Instead of changing templates, we should ensure that the new modular route structure creates the exact same endpoint names that the templates expect. This way:
+
+✅ Templates remain unchanged
+✅ No risk of breaking other template references
+✅ Clean migration path
+✅ Both routing systems will have identical endpoint names
+
+What I need to do this:
+
+Legacy routes file (legacy_routes.py) - to see all the existing endpoint names
+Current modular route files (in web/routes/) - to see what's missing or named differently
+
+The fix will involve:
+
+Ensuring every route in the legacy system has an equivalent route with the same endpoint name in the modular system
+Adding any missing routes (like the web.configuration route that's causing the current error)
+Making sure the blueprint names and route names match exactly
+
+This approach is much cleaner and safer. Can you share the legacy_routes.py file and the current modular route files?
+
+Perfect! Now I can see all the endpoint names from the legacy routes. Let me also see the current modular route files to understand what's missing or incorrectly named.
+From the legacy routes, I can see these web endpoints that need to exist in the modular structure:
+
+web.index (/)
+web.upload_page (/upload)
+web.documents_list (/documents)
+web.document_detail (/document/int:doc_id)
+web.configuration (/configuration) - This is the missing one causing the error!
+
+And these API endpoints:
+
+api.upload_file (/api/upload)
+api.get_documents (/api/documents)
+api.get_document (/api/document/int:doc_id)
+api.reprocess_document (/api/document/int:doc_id/reprocess)
+api.get_stats (/api/stats)
+api.check_duplicate (/api/check-duplicate)
+api.refresh_stats (/api/stats/refresh)
+
+Can you now share the current modular route files (the ones in web/routes/) so I can see:
+
+What routes are currently defined
+What's missing (especially the web.configuration route)
+What might be named differently
+
+This will let me provide the exact fixes needed to make the modular structure match the legacy structure perfectly.
