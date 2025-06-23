@@ -24,7 +24,7 @@ if USE_MODULAR_ROUTES:
     from web.routes import create_api_blueprint, create_web_blueprint, create_config_blueprint
 else:
     # Legacy monolithic structure imports
-    from web.routes import api, web, init_routes
+    from web.legacy_routes import api, web, init_routes
 
 def create_app(config_path: str = None) -> Flask:
     """Create and configure Flask application"""
