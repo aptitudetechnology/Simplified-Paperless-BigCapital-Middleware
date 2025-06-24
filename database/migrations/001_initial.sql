@@ -1,4 +1,4 @@
-# database/migrations/combined.sql
+# database/migrations/001_initial.sql
 
 -- Core Documents Table
 CREATE TABLE IF NOT EXISTS documents (
