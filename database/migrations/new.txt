@@ -1,0 +1,72 @@
+I've created an enhanced version of your database schema that incorporates all the necessary fields and structures for the advanced document detail view. Here are the key enhancements:
+
+## Major Additions:
+
+### 1. **Enhanced Documents Table**
+- **OCR Enhancements**: `ocr_confidence_scores`, `ocr_metadata`, `ocr_regions` for detailed OCR analysis
+- **Extraction Debug**: `extraction_attempts`, `extraction_patterns_tried`, `field_extraction_reasons`, `extraction_debug_info`
+- **Processing Status**: `extraction_status`, `overall_confidence_score`, `requires_manual_review`, `processing_flags`
+- **Manual Corrections**: `manual_corrections`, `correction_history`, `is_manually_verified`, `verified_by`, `verified_at`
+- **File Management**: `preview_image_path`, `document_pages`, `preferred_preview_page`
+- **Enhanced Logging**: `detailed_processing_log`, `processing_stages_completed`, `last_manual_update`
+
+### 2. **New Tables**
+- **`document_field_extractions`**: Granular field-level extraction tracking with confidence scores, patterns tried, manual corrections, and text positioning
+- **Enhanced `processing_log`**: Added `processing_stage`, `field_name`, `execution_time_ms`, `memory_usage_mb`, `context_data`
+
+### 3. **Enhanced Configuration**
+Added 11 new configuration options for:
+- Detailed logging control
+- Confidence thresholds
+- Preview image generation
+- Field extraction parameters
+- Review workflow settings
+
+### 4. **Smart Triggers**
+- **Auto-flagging**: Automatically flags documents for manual review based on confidence thresholds
+- **Timestamp management**: Maintains updated_at fields
+- **Vendor statistics**: Tracks vendor-related metrics
+
+### 5. **Advanced Views**
+- **`document_summary`**: Enhanced with field extraction statistics
+- **`documents_needing_review`**: Identifies documents requiring attention
+- **`extraction_performance`**: Performance analysis by field and method
+- **`processing_timeline`**: Step-by-step processing visualization
+
+## Key JSON Data Structures:
+
+### OCR Confidence Scores
+```json
+{
+  "regions": [
+    {"bbox": [100, 200, 300, 250], "text": "Invoice #12345", "confidence": 0.95, "page": 1}
+  ],
+  "overall_confidence": 0.87,
+  "low_confidence_regions": 3
+}
+```
+
+### Extraction Attempts
+```json
+{
+  "invoice_number": [
+    {
+      "method": "regex",
+      "pattern": "Invoice\\s*#?\\s*(\\d+)",
+      "matches": ["12345"],
+      "confidence": 0.9,
+      "success": true,
+      "execution_time_ms": 12
+    }
+  ]
+}
+```
+
+This enhanced schema provides the foundation for:
+1. **Rich debugging interface** showing exactly why extractions failed
+2. **Confidence-based review workflows** with automatic flagging
+3. **Field-level correction tracking** with full audit trails
+4. **Performance monitoring** across different extraction methods
+5. **Advanced document preview** with OCR region overlays
+
+The schema is backward compatible with your existing data while adding comprehensive support for the enhanced document detail view you're planning to build.
