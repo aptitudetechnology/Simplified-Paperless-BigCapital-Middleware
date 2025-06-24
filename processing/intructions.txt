@@ -52,3 +52,360 @@ Bulk correction capabilities
 Instructions for Next Session:
 "I want to enhance the document detail view to show OCR results, extraction debugging info, and allow manual corrections. Here are my current files: [attach files]. Let's start with a mockup of the improved document detail page showing full processing transparency."
 This will give us everything needed to design both the UI and underlying data structure!
+
+
+---
+
+
+    Query successful
+
+Certainly! Let's craft a mockup for the Enhanced Document Detail view. The goal is to provide full transparency into the document processing, from OCR to extraction, and enable manual corrections.
+
+Here's a detailed description of the mockup for the Enhanced Document Detail page, incorporating your requirements:
+Enhanced Document Detail Mockup
+
+Page Title: Document ID: [Document ID - e.g., DOC-20250624-001]
+
+(Top Bar - Consistent with Dashboard)
+
+    [Refresh Button]
+    [Timestamp]
+
+Section 1: Document Overview & Actions
+
+(Left Half - Original Document Preview)
+
+    Original Document Preview:
+        A large, embeddable viewer for the original PDF document.
+        Controls: Zoom in/out, Fit to page, Next/Previous Page (if multi-page).
+        Overlay (Optional for future): Highlighted areas indicating detected fields.
+
+(Right Half - Key Information & Actions)
+
+    Filename: CodePenReceipt2Demo.pdf
+
+    Status: Completed (or Pending, Failed, Needs Review)
+
+    Vendor: Unknown
+
+    Amount: N/A
+
+    Upload Date: 2025-06-24 07:26:30
+
+    Processing Status Summary:
+        [Green Check Icon] OCR Completed
+        [Yellow Warning Icon] Extraction Partially Successful
+        [Red X Icon] Manual Correction Needed
+
+    Actions:
+        [Button] Download Original
+        [Button] Re-process Document
+        [Button] Save Corrections (appears when edits are made)
+        [Button] Cancel
+
+Section 2: Raw OCR Output
+
+    Header: Raw OCR Text Output
+    Description: This section displays the raw text extracted by the OCR engine, along with character-level or word-level confidence scores.
+    Content: A scrollable, monospaced text area showing the OCR output. Each word/token would ideally be wrapped in a <span> with a data-confidence attribute, and perhaps a subtle color-coding (e.g., green for high confidence, yellow for medium, red for low).
+        Example:
+
+        RECEIPT (Confidence: 0.98)
+        Date: (Confidence: 0.95) 24/06/2025 (Confidence: 0.99)
+        Store: (Confidence: 0.90) Unk (Confidence: 0.50) Store (Confidence: 0.92)
+        Total: (Confidence: 0.97) $ (Confidence: 0.99) 150.75 (Confidence: 0.99)
+        ...
+
+    (Optional: Interactive Element) On hover over a word, a tooltip could show the exact confidence score.
+
+Section 3: Extraction Attempts & Debugging
+
+    Header: Extraction Attempts & Debugging
+
+    Description: This section details the patterns and rules applied during the data extraction phase and highlights why certain fields might be Unknown or N/A.
+
+    Sub-section: Extraction Strategy/Patterns Applied:
+        A list or table showing the order in which extraction patterns were attempted for different fields.
+        Example:
+            Vendor:
+                Pattern 1: invoice_vendor_regex_list.py (Status: Failed - No Match)
+                Pattern 2: common_header_keywords.py (Status: Failed - Low Confidence Match)
+                Pattern 3: trained_model_prediction (Status: Failed - Below Threshold)
+            Amount:
+                Pattern 1: total_amount_regex.py (Status: Success - Matched '$X.XX')
+                Pattern 2: subtotal_regex.py (Status: Skipped - Total found)
+            Date:
+                Pattern 1: date_formats_list.py (Status: Success - Matched 'DD/MM/YYYY')
+
+    Sub-section: Field-by-Field Results & Reasons:
+        A table or list displaying each expected field, its extracted value, and a detailed reason if the extraction was unsuccessful or flagged for review.
+        Field | Extracted Value | Confidence | Reason/Debug Info | Action
+        Vendor | Unknown | N/A | No configured regex pattern yielded a high-confidence match within proximity of "Vendor" keyword. | [Edit Icon]
+        Amount | $150.75 | 0.99 | Matched regex /Total:\s*\$([0-9]+\.[0-9]{2})/ | [Edit Icon]
+        Date | 24/06/2025 | 0.98 | Matched date format DD/MM/YYYY. | [Edit Icon]
+        Item List | N/A | N/A | No line item extraction logic applied or recognized. | [Edit Icon]
+        ... (Other fields like Tax, Subtotal, etc.)
+
+Section 4: Processing Timeline/Steps
+
+    Header: Processing Timeline
+    Description: A chronological log of the major processing steps, including start/end times and any critical events or errors.
+    Content:
+        1. Document Upload: 2025-06-24 07:26:30 (User: [Username])
+        2. OCR Processing Started: 2025-06-24 07:26:32
+        3. OCR Processing Completed: 2025-06-24 07:26:35 (Time taken: 3s)
+        4. Text Extraction Started: 2025-06-24 07:26:36
+        5. Vendor Extraction Attempted: 2025-06-24 07:26:37 (Status: Failed)
+        6. Amount Extraction Attempted: 2025-06-24 07:26:38 (Status: Success)
+        7. Date Extraction Attempted: 2025-06-24 07:26:38 (Status: Success)
+        8. Document Indexed in Database: 2025-06-24 07:26:39
+        9. Status Updated to 'Completed': 2025-06-24 07:26:39
+
+Section 5: Manual Correction Interface
+
+    Header: Manual Corrections
+
+    Description: This section allows users to directly edit extracted fields and provide feedback.
+
+    Content: A form-like interface where each field from the "Field-by-Field Results" section can be manually edited.
+
+    Field Name: Vendor
+        Current Value: Unknown
+        Correction: [Text Input Field] (e.g., Amazon)
+        Reason for Correction (Optional): [Dropdown: "Incorrect OCR", "Missing Pattern", "Other"]
+        [Button] Save Vendor
+
+    Field Name: Amount
+        Current Value: $150.75
+        Correction: [Text Input Field] (e.g., $15.75 - if OCR was wrong)
+        Reason for Correction (Optional): [Dropdown]
+        [Button] Save Amount
+
+    [Large Button at bottom of section] Apply All Corrections & Re-evaluate (This would trigger a re-indexing/update of the document in the system).
+
+UI/UX Considerations:
+
+    Collapsible Sections: Each major section (Raw OCR, Extraction Attempts, Timeline, Manual Correction) could be collapsible to manage screen real estate, especially for complex documents.
+    Visual Cues: Use color-coding (green, yellow, red) consistently for success, partial success/warning, and failure across the mockup.
+    Tooltips: Provide helpful tooltips on icons or potentially confusing terms.
+    Interactive Elements: The "Edit Icon" next to each field in "Field-by-Field Results" would smoothly transition to the relevant input field in the "Manual Correction Interface", or directly open a modal for that field.
+
+This mockup provides a comprehensive blueprint for the Enhanced Document Detail view. It aims to achieve full transparency by exposing the underlying processing steps and data, while also providing a clear path for user intervention and correction.
+
+The next step will be to think about how this data is captured and stored.
+
+here is the current template: document_detail.html
+
+
+{% extends 'base.html' %}
+
+{% block title %}Document Detail{% endblock %}
+
+{% block content %}
+
+<h1>Document: {{ document.original_filename }}</h1>
+
+
+<p><strong>Status:</strong> {{ document.status }}</p>
+
+<p><strong>Total Amount:</strong> {{ document.total_amount }}</p>
+
+<p><strong>Vendor:</strong> {{ document.vendor_name }}</p>
+
+<p><strong>Uploaded:</strong> {{ document.upload_date }}</p>
+
+
+<h2>Line Items</h2>
+
+<table>
+
+  <tr>
+
+    <th>#</th>
+
+    <th>Description</th>
+
+    <th>Qty</th>
+
+    <th>Price</th>
+
+  </tr>
+
+  {% for item in line_items %}
+
+  <tr>
+
+    <td>{{ item.line_number }}</td>
+
+    <td>{{ item.description }}</td>
+
+    <td>{{ item.quantity }}</td>
+
+    <td>{{ item.unit_price }}</td>
+
+  </tr>
+
+  {% endfor %}
+
+</table>
+
+
+<h2>Processing Log</h2>
+
+<ul>
+
+  {% for log in processing_log %}
+
+  <li>[{{ log.created_at }}] ({{ log.level }}) {{ log.message }}</li>
+
+  {% endfor %}
+
+</ul>
+
+
+{% endblock %}
+
+Okay, let's lay out the implementation strategy for the Enhanced Document Detail view, building upon the mockup and considering your existing document_detail.html template.
+Plan Implementation Strategy
+1. What Data Needs to be Stored in the Database (database/models.py)
+
+To support the enhanced detail view, we need to extend our database schema. Here's a breakdown of the new or modified data points required:
+
+A. Core Document Model (Document in models.py) - Modifications:
+
+    ocr_text_output (Text/JSONB): Stores the raw OCR text. JSONB is preferred if we want to store word-level confidence scores or bounding box information alongside the text for interactive features later. Otherwise, a simple Text field for the plain OCR output.
+    extraction_status (String/Enum): More granular than status. Could be 'Completed', 'Partial_Extraction', 'Failed_Extraction', 'Needs_Manual_Review'.
+    extraction_confidence_scores (JSONB): A dictionary/JSON object storing confidence scores for each extracted field (e.g., {'vendor': 0.75, 'total_amount': 0.99}).
+    extracted_fields_debug_info (JSONB): A more detailed log per field, explaining extraction attempts, patterns tried, and success/failure reasons.
+        Example structure:
+        JSON
+
+        {
+          "vendor_name": {
+            "extracted_value": "Unknown",
+            "reason": "No high-confidence match found.",
+            "patterns_tried": [
+              {"name": "regex_vendor_list_1", "status": "failed", "detail": "No match"},
+              {"name": "ml_model_vendor", "status": "failed", "detail": "Confidence below threshold (0.6)"}
+            ]
+          },
+          "total_amount": {
+            "extracted_value": "150.75",
+            "confidence": 0.99,
+            "reason": "Matched regex /Total:\\s*\\$([0-9]+\\.[0-9]{2})/",
+            "patterns_tried": [
+              {"name": "regex_total_amount", "status": "success"}
+            ]
+          }
+        }
+
+    manual_corrections (JSONB): A dictionary to store any user-applied corrections, mapping field names to corrected values. This should ideally be separate from extracted_fields_debug_info to distinguish original extraction from user overrides.
+        Example: {'vendor_name': 'Amazon Inc.', 'total_amount': '15.75'}
+    document_file_path (String): Path to the stored original document (if not already present). This is crucial for the "Original document preview".
+
+B. New/Enhanced Log Model (ProcessingLog in models.py) - Enhancements:
+
+Your existing processing_log is good. We might just need to ensure the message field is rich enough or consider adding a stage field to categorize log entries (e.g., 'OCR', 'Extraction', 'Validation').
+
+    log_type (String/Enum): e.g., 'INFO', 'WARNING', 'ERROR', 'DEBUG_EXTRACTION'.
+    stage (String/Enum): e.g., 'OCR', 'TEXT_EXTRACTION', 'DATA_ENRICHMENT', 'DATABASE_PERSISTENCE'.
+    details (JSONB - Optional): For more structured log details, especially for errors or specific extraction events.
+
+2. How to Modify the Processor to Capture Debug Info
+
+This involves significant changes across your core processing files.
+
+A. core/ocr_processor.py (OCR Processing Implementation)
+
+    Output Enhancement: The process_ocr function should be modified to return not just the plain text, but also metadata crucial for debugging.
+        Return Value: Instead of just a string, return a dictionary:
+        Python
+
+        {
+            "raw_text": "...",
+            "word_confidences": [
+                {"word": "RECEIPT", "confidence": 0.98, "bbox": [x,y,w,h]},
+                ...
+            ],
+            "full_document_confidence": 0.95 # Overall OCR confidence
+        }
+
+        This detailed output will populate the ocr_text_output field in the Document model.
+
+B. core/text_extractor.py (Data Extraction Logic)
+
+    Capture Attempt Details: Each extraction function (e.g., extract_vendor, extract_amount) needs to log its attempt, the pattern used, whether it succeeded or failed, and why.
+        Instrumentation: Introduce a ExtractionAttempt object or a similar data structure that is populated during each extraction step.
+        Modify extraction functions to return not just the value, but also metadata about the extraction:
+        Python
+
+        {
+            "value": "Amazon",
+            "confidence": 0.85,
+            "pattern_used": "regex_vendor_list_1",
+            "status": "success",
+            "debug_message": "Matched 'Amazon' from line 5"
+        }
+
+        This data will be aggregated to form the extracted_fields_debug_info and extraction_confidence_scores for the Document model.
+
+C. processing/document_processor.py (Main Processor Logic)
+
+    Orchestration & Data Aggregation: This file will be the central point for orchestrating the data capture.
+        Call Flow:
+            Call ocr_processor.py to get the detailed OCR output. Store ocr_text_output and any full_document_confidence.
+            Call text_extractor.py functions for each field. For each field extraction attempt, collect the debug information (pattern tried, success/fail, confidence).
+            Aggregate all extracted_fields_debug_info and extraction_confidence_scores into the respective JSONB fields of the Document object.
+            Update Document.extraction_status based on the overall success of extraction (e.g., if all high-priority fields are extracted with high confidence -> 'Completed', if some failed or had low confidence -> 'Partial_Extraction' or 'Needs_Manual_Review').
+            Log extensively: Use your ProcessingLog model to log each major step (OCR start/end, Extraction start/end, specific field extraction success/failure, database update). This forms the "Processing Timeline".
+        Error Handling: Ensure that if any step fails, relevant information is logged to the ProcessingLog and Document.status is updated to 'Failed' or 'Error'.
+
+3. UI/UX Flow for the Enhanced Detail View (web/templates/document_detail.html & web/routes/web_routes.py)
+
+The mockup provides the visual layout; now let's consider the interaction flow.
+
+A. web/routes/web_routes.py - Route Handling:
+
+    Data Fetching: The document_detail route will need to fetch all the new data points from the Document model:
+        document.ocr_text_output
+        document.extraction_confidence_scores
+        document.extracted_fields_debug_info
+        document.manual_corrections
+        All relevant ProcessingLog entries for that document.
+    Pass to Template: These new data structures will be passed as context variables to the document_detail.html template.
+
+B. web/templates/document_detail.html - Template Modifications:
+
+    Structure:
+        Utilize Bootstrap or similar CSS framework (if available) for layout, tabs, and collapsible sections as described in the mockup.
+        Implement the "Original Document Preview" using an <iframe> to embed the PDF, assuming the document_file_path points to a web-accessible PDF. You might need a new route to serve these files securely.
+    Raw OCR Output:
+        Display document.ocr_text_output.raw_text in a <pre> tag for monospace formatting.
+        If word_confidences are available, use JavaScript to iterate through them, wrap words in <span> tags, and apply color-coding based on data-confidence attributes.
+    Extraction Attempts & Debugging:
+        Loop through document.extracted_fields_debug_info to generate the "Field-by-Field Results" table.
+        For "Extraction Strategy/Patterns Applied," dynamically generate nested lists or tables based on the patterns_tried array within each field's debug info.
+    Processing Timeline/Steps:
+        Loop through the processing_log entries to display the chronological list.
+    Manual Correction Interface:
+        Create a form with input fields for each editable field (e.g., vendor_name, total_amount).
+        Pre-populate these fields with either the extracted_value or the manual_corrections value if it exists (giving precedence to manual corrections).
+        Use JavaScript to enable a "Save Corrections" button only when changes are detected.
+        Upon form submission, send an AJAX request or a standard form post to a new route (e.g., /documents/<id>/correct) which will update the document.manual_corrections and potentially trigger a re-evaluation of the document status if desired.
+    Styling (web/static/css/style.css):
+        Add styles for the new sections, confidence indicators (colors for text/background), and the layout.
+
+Dashboard Improvements (Quick Notes for Future)
+
+    Better status indicators showing extraction quality:
+        Modify the Status display on the dashboard cards and table to reflect document.extraction_status (e.g., 'Completed', 'Partial', 'Needs Review').
+        Potentially add small icons (e.g., a half-filled circle for "Partial Extraction").
+    Quick preview of extraction confidence:
+        In the "Recent Documents" table, add a new column for "Extraction Confidence" or a visual progress bar/icon based on an aggregated confidence score from document.extraction_confidence_scores.
+    Bulk correction capabilities:
+        This is a more advanced feature. It would involve a separate "Review Queue" page.
+        Users could filter by extraction_status = 'Needs_Manual_Review'.
+        Provide checkboxes next to documents and a "Bulk Correct" button that opens a modal with common fields to update across selected documents. This would be a phase 2 or 3 feature.
+
+This detailed plan provides a roadmap for integrating the enhanced features into your existing system. The key is meticulous data capture in the processing layer to feed the rich debug information to the UI.
+
