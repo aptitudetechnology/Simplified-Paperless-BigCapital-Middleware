@@ -1,0 +1,54 @@
+Files to Share:
+
+Core Processing Files:
+
+processing/document_processor.py - The main processor logic
+core/ocr_processor.py - OCR processing implementation
+core/text_extractor.py - Data extraction logic
+database/models.py - Database schema to understand what's stored
+
+
+Web Interface Files:
+
+web/templates/document_detail.html - Current document detail view
+web/routes/web_routes.py - Route handling for document details
+web/static/css/style.css - Current styling
+
+
+Sample Data:
+
+If possible, a screenshot of what currently happens when you click the "eye" icon
+Any example of OCR text output you might have in logs
+
+
+
+Session Goals:
+
+Create Enhanced Document Detail Mockup showing:
+
+Original document preview
+Raw OCR text output with confidence scores
+Extraction attempts section (what patterns were tried)
+Field-by-field results (why vendor=Unknown, amount=N/A)
+Processing timeline/steps
+Manual correction interface for failed extractions
+
+
+Plan Implementation Strategy:
+
+What data needs to be stored in database
+How to modify the processor to capture debug info
+UI/UX flow for the enhanced detail view
+
+
+Dashboard Improvements:
+
+Better status indicators showing extraction quality
+Quick preview of extraction confidence
+Bulk correction capabilities
+
+
+
+Instructions for Next Session:
+"I want to enhance the document detail view to show OCR results, extraction debugging info, and allow manual corrections. Here are my current files: [attach files]. Let's start with a mockup of the improved document detail page showing full processing transparency."
+This will give us everything needed to design both the UI and underlying data structure!
