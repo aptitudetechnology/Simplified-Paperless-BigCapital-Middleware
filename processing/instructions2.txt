@@ -1,0 +1,260 @@
+Perfect! Now I can see the current database structure. Based on your existing schema and the enhancement requirements, I'll analyze what needs to be added for the enhanced document detail view. Let me break down the required database changes:
+
+## Database Schema Enhancement Analysis
+
+### Current Structure Assessment
+Your existing `documents` table already has:
+- Basic OCR fields (`ocr_text`, `ocr_confidence`)
+- Core extracted data fields
+- Processing metadata (`processing_error`, `extraction_method`, `processing_duration`)
+- Integration fields for BigCapital
+
+### Required Additions for Enhanced Detail View
+
+Here are the specific database schema changes needed:
+
+## New Fields for Documents Table
+
+```sql
+-- Enhanced OCR Data Storage
+ALTER TABLE documents ADD COLUMN ocr_confidence_scores TEXT; -- JSON data for per-region confidence
+ALTER TABLE documents ADD COLUMN ocr_metadata TEXT; -- JSON: engine details, processing params
+ALTER TABLE documents ADD COLUMN ocr_regions TEXT; -- JSON: bounding boxes and text regions
+
+-- Detailed Extraction Debug Information
+ALTER TABLE documents ADD COLUMN extraction_attempts TEXT; -- JSON: detailed extraction logs
+ALTER TABLE documents ADD COLUMN extraction_patterns_tried TEXT; -- JSON: patterns/methods attempted
+ALTER TABLE documents ADD COLUMN field_extraction_reasons TEXT; -- JSON: per-field success/failure reasons
+ALTER TABLE documents ADD COLUMN extraction_debug_info TEXT; -- JSON: comprehensive debug data
+
+-- Enhanced Processing Status
+ALTER TABLE documents ADD COLUMN extraction_status VARCHAR(50) DEFAULT 'pending'; -- 'complete', 'partial', 'needs_review', 'failed'
+ALTER TABLE documents ADD COLUMN overall_confidence_score REAL; -- Calculated overall confidence
+ALTER TABLE documents ADD COLUMN requires_manual_review BOOLEAN DEFAULT FALSE;
+ALTER TABLE documents ADD COLUMN processing_flags TEXT; -- JSON: various processing flags and warnings
+
+-- Manual Corrections Support
+ALTER TABLE documents ADD COLUMN manual_corrections TEXT; -- JSON: user-applied corrections
+ALTER TABLE documents ADD COLUMN correction_history TEXT; -- JSON: history of corrections with timestamps
+ALTER TABLE documents ADD COLUMN is_manually_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE documents ADD COLUMN verified_by VARCHAR(100); -- User who verified
+ALTER TABLE documents ADD COLUMN verified_at DATETIME;
+
+-- Enhanced File Management
+ALTER TABLE documents ADD COLUMN preview_image_path VARCHAR(500); -- Path to generated preview/thumbnail
+ALTER TABLE documents ADD COLUMN document_pages INTEGER DEFAULT 1; -- Number of pages in document
+ALTER TABLE documents ADD COLUMN preferred_preview_page INTEGER DEFAULT 1;
+
+-- Detailed Processing Timeline
+ALTER TABLE documents ADD COLUMN detailed_processing_log TEXT; -- JSON: step-by-step processing log
+ALTER TABLE documents ADD COLUMN processing_stages_completed TEXT; -- JSON: completed processing stages
+ALTER TABLE documents ADD COLUMN last_manual_update DATETIME; -- When manual corrections were last made
+```
+
+## New Table for Field-Level Extraction Details
+
+```sql
+-- New table for granular field extraction tracking
+CREATE TABLE IF NOT EXISTS document_field_extractions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    field_type VARCHAR(50) NOT NULL, -- 'text', 'date', 'amount', 'number'
+    
+    -- Extraction attempts
+    extraction_method VARCHAR(100), -- 'regex', 'ml_model', 'heuristic', 'manual'
+    patterns_tried TEXT, -- JSON array of patterns attempted
+    raw_matches TEXT, -- JSON array of raw pattern matches
+    
+    -- Results
+    extracted_value TEXT,
+    confidence_score REAL,
+    extraction_status VARCHAR(50), -- 'extracted', 'partial', 'failed', 'manual'
+    failure_reason TEXT,
+    
+    -- Manual corrections
+    original_value TEXT,
+    corrected_value TEXT,
+    correction_reason TEXT,
+    corrected_by VARCHAR(100),
+    corrected_at DATETIME,
+    
+    -- Context
+    source_text_snippet TEXT, -- Context where value was found
+    text_position_start INTEGER, -- Character position in OCR text
+    text_position_end INTEGER,
+    bounding_box TEXT, -- JSON: coordinates if available
+    
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
+```
+
+## Enhanced Processing Log Table
+
+```sql
+-- Enhance existing processing_log with more detailed information
+ALTER TABLE processing_log ADD COLUMN processing_stage VARCHAR(100); -- 'ocr', 'extraction', 'validation', 'correction'
+ALTER TABLE processing_log ADD COLUMN field_name VARCHAR(100); -- Specific field being processed
+ALTER TABLE processing_log ADD COLUMN execution_time_ms INTEGER; -- Execution time for this step
+ALTER TABLE processing_log ADD COLUMN memory_usage_mb REAL; -- Memory usage at this step
+ALTER TABLE processing_log ADD COLUMN context_data TEXT; -- JSON: additional context for this log entry
+```
+
+## New Configuration Options
+
+```sql
+-- Add new configuration options for enhanced processing
+INSERT OR IGNORE INTO system_config (config_key, config_value, config_type, description) VALUES
+('detailed_logging_enabled', 'true', 'boolean', 'Enable detailed extraction logging'),
+('ocr_region_confidence_threshold', '70', 'integer', 'Minimum confidence for OCR regions'),
+('extraction_debug_mode', 'true', 'boolean', 'Enable extraction debugging information'),
+('manual_review_confidence_threshold', '80', 'integer', 'Below this confidence, flag for manual review'),
+('generate_preview_images', 'true', 'boolean', 'Generate preview images for documents'),
+('preview_image_dpi', '150', 'integer', 'DPI for preview image generation'),
+('max_extraction_patterns_per_field', '10', 'integer', 'Maximum patterns to try per field'),
+('field_extraction_timeout', '30', 'integer', 'Timeout per field extraction in seconds');
+```
+
+## Additional Indexes for Performance
+
+```sql
+-- Indexes for new fields
+CREATE INDEX IF NOT EXISTS idx_documents_extraction_status ON documents(extraction_status);
+CREATE INDEX IF NOT EXISTS idx_documents_requires_review ON documents(requires_manual_review);
+CREATE INDEX IF NOT EXISTS idx_documents_verified ON documents(is_manually_verified);
+CREATE INDEX IF NOT EXISTS idx_documents_confidence ON documents(overall_confidence_score);
+
+CREATE INDEX IF NOT EXISTS idx_field_extractions_document ON document_field_extractions(document_id);
+CREATE INDEX IF NOT EXISTS idx_field_extractions_field ON document_field_extractions(field_name);
+CREATE INDEX IF NOT EXISTS idx_field_extractions_status ON document_field_extractions(extraction_status);
+CREATE INDEX IF NOT EXISTS idx_field_extractions_method ON document_field_extractions(extraction_method);
+
+CREATE INDEX IF NOT EXISTS idx_processing_log_stage ON processing_log(processing_stage);
+CREATE INDEX IF NOT EXISTS idx_processing_log_field ON processing_log(field_name);
+```
+
+## Enhanced Views for Complex Queries
+
+```sql
+-- Updated document summary view with new fields
+DROP VIEW IF EXISTS document_summary;
+CREATE VIEW IF NOT EXISTS document_summary AS
+SELECT
+    d.*,
+    COUNT(li.id) as line_item_count,
+    COALESCE(SUM(li.line_total), 0) as calculated_total,
+    v.bigcapital_vendor_id,
+    CASE
+        WHEN EXISTS (SELECT 1 FROM documents d2
+                     WHERE d2.file_hash = d.file_hash
+                     AND d2.id != d.id
+                     AND d.file_hash IS NOT NULL)
+        THEN 'duplicate'
+        ELSE 'unique'
+    END as duplicate_status,
+    -- Field extraction summary
+    (SELECT COUNT(*) FROM document_field_extractions dfe 
+     WHERE dfe.document_id = d.id AND dfe.extraction_status = 'extracted') as fields_extracted,
+    (SELECT COUNT(*) FROM document_field_extractions dfe 
+     WHERE dfe.document_id = d.id AND dfe.extraction_status = 'failed') as fields_failed,
+    (SELECT COUNT(*) FROM document_field_extractions dfe 
+     WHERE dfe.document_id = d.id AND dfe.corrected_value IS NOT NULL) as fields_corrected
+FROM documents d
+LEFT JOIN document_line_items li ON d.id = li.document_id
+LEFT JOIN vendors v ON LOWER(TRIM(d.vendor_name)) = v.normalized_name
+GROUP BY d.id;
+
+-- View for documents needing review
+CREATE VIEW IF NOT EXISTS documents_needing_review AS
+SELECT 
+    d.id,
+    d.filename,
+    d.original_filename,
+    d.extraction_status,
+    d.overall_confidence_score,
+    d.requires_manual_review,
+    d.processed_date,
+    COUNT(dfe.id) as total_fields,
+    COUNT(CASE WHEN dfe.extraction_status = 'failed' THEN 1 END) as failed_fields,
+    COUNT(CASE WHEN dfe.confidence_score < 0.7 THEN 1 END) as low_confidence_fields
+FROM documents d
+LEFT JOIN document_field_extractions dfe ON d.id = dfe.document_id
+WHERE d.requires_manual_review = TRUE 
+   OR d.overall_confidence_score < 0.8
+   OR d.extraction_status IN ('partial', 'needs_review')
+GROUP BY d.id
+ORDER BY d.processed_date DESC;
+
+-- View for extraction performance analysis
+CREATE VIEW IF NOT EXISTS extraction_performance AS
+SELECT 
+    field_name,
+    COUNT(*) as total_attempts,
+    COUNT(CASE WHEN extraction_status = 'extracted' THEN 1 END) as successful_extractions,
+    COUNT(CASE WHEN extraction_status = 'failed' THEN 1 END) as failed_extractions,
+    AVG(confidence_score) as avg_confidence,
+    extraction_method,
+    COUNT(CASE WHEN corrected_value IS NOT NULL THEN 1 END) as manual_corrections
+FROM document_field_extractions
+GROUP BY field_name, extraction_method
+ORDER BY field_name, successful_extractions DESC;
+```
+
+## Data Structure Examples
+
+Here's how the JSON data should be structured in the new fields:
+
+### OCR Confidence Scores
+```json
+{
+  "regions": [
+    {
+      "bbox": [100, 200, 300, 250],
+      "text": "Invoice #12345",
+      "confidence": 0.95,
+      "page": 1
+    }
+  ],
+  "overall_confidence": 0.87,
+  "low_confidence_regions": 3,
+  "total_regions": 25
+}
+```
+
+### Extraction Attempts
+```json
+{
+  "invoice_number": [
+    {
+      "method": "regex",
+      "pattern": "Invoice\\s*#?\\s*(\\d+)",
+      "matches": ["12345"],
+      "confidence": 0.9,
+      "success": true,
+      "execution_time_ms": 12
+    }
+  ],
+  "vendor_name": [
+    {
+      "method": "heuristic",
+      "pattern": "top_text_extraction",
+      "matches": ["ACME Corp"],
+      "confidence": 0.75,
+      "success": true,
+      "fallback_used": false
+    }
+  ]
+}
+```
+
+This enhancement provides the foundation for:
+1. **Rich debugging information** for troubleshooting extraction issues
+2. **Granular field-level tracking** for better accuracy analysis
+3. **Manual correction capabilities** with full audit trails
+4. **Performance monitoring** of different extraction methods
+5. **Confidence-based review workflows** for quality control
+
+Would you like me to proceed with creating the migration script for these changes, or would you prefer to review and modify any of these enhancements first?
