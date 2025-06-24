@@ -40,6 +40,11 @@ class Config:
             'level': 'INFO',
             'file': 'logs/middleware.log'
         }
+
+        self.config['currency'] = {
+             'default': 'USD',
+             'supported': 'USD,EUR,GBP,AUD,CAD'
+     }
         
         with open(self.config_file, 'w') as f:
             self.config.write(f)
