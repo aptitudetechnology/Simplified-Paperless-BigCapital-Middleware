@@ -409,3 +409,39 @@ Dashboard Improvements (Quick Notes for Future)
 
 This detailed plan provides a roadmap for integrating the enhanced features into your existing system. The key is meticulous data capture in the processing layer to feed the rich debug information to the UI.
 
+
+---
+
+could you give a simplified set of instructions that I could provide in the next session?
+
+Certainly! Here's a simplified set of instructions you can provide in your next session to keep the momentum going:
+
+Instructions for Next Session: Enhanced Document Detail View
+
+"I want to enhance the document detail view to show OCR results, extraction debugging info, and allow manual corrections.
+
+Here's the plan we've laid out:
+
+    Database Changes: We need to add fields to the Document model for:
+        Raw OCR text and confidence scores.
+        Detailed extraction attempts and reasons (why a field was 'Unknown' or 'N/A').
+        Overall extraction status (e.g., 'Partial Extraction', 'Needs Review').
+        User-applied manual corrections.
+        The path to the original document file for preview.
+
+    Processor Modifications:
+        ocr_processor.py: Should return richer OCR output, including confidence scores.
+        text_extractor.py: Needs to capture and return debug information for each extraction attempt, detailing patterns tried and success/failure.
+        document_processor.py: Will orchestrate these changes, aggregate all debug info, and update the Document model with the new data points and an enhanced processing log.
+
+    Web Interface (document_detail.html & web_routes.py):
+        The detail page should fetch and display all this new data.
+        We need sections for:
+            Original document preview.
+            Raw OCR text (with confidence indications).
+            Detailed extraction attempts and field-by-field reasons.
+            A chronological processing timeline.
+            An interactive form for manual corrections that can update the document.
+
+Let's begin by focusing on the necessary database schema changes and processor logic updates to capture this data."
+
