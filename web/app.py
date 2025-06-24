@@ -165,6 +165,7 @@ def setup_logging(app: Flask, config: Config):
 def main():
     """Main entry point"""
     # Determine the path to the config.json file
+    # Even though it should be config.ini!
     # Get the directory of the current file (app.py)
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -172,8 +173,11 @@ def main():
     project_root = os.path.dirname(current_file_dir)
     
     # Construct the path to config/config.json
-    config_file_path = os.path.join(project_root, 'config', 'config.json')
+    #config_file_path = os.path.join(project_root, 'config', 'config.json')
 
+    # Construct the path to config/config.ini
+    config_file_path = os.path.join(project_root, 'config', 'config.ini')
+    
     print(f"Attempting to load configuration from: {config_file_path}") # Debugging line
 
     # Load configuration by passing the determined path
