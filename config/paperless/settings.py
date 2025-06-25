@@ -1,5 +1,5 @@
 
-# config/paperles/settings.py
+# config/paperless/settings.py
 import os
 import configparser
 from pathlib import Path
