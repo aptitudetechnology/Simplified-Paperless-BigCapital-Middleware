@@ -14,3 +14,14 @@ clean:
 	docker stop simplified-paperless-middleware || true
 	docker rm simplified-paperless-middleware || true
 	docker rmi caston81/simplified-paperless-bigcapital-middleware:latest || true
+
+# --- Docker Compose related targets ---
+
+compose-up: build
+	docker-compose up -d
+
+compose-down:
+	docker-compose down
+
+compose-logs:
+	docker-compose logs -f
