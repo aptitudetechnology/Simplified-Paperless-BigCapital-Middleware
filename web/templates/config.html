@@ -46,16 +46,16 @@
             <div class="card-body">
                 <div class="form-group row">
                     <div class="col-md-6">
-                        <label for="paperless_ngx_api_url">API URL</label>
-                        <input type="text" class="form-control" id="paperless_ngx_api_url" name="paperless_ngx_api_url"
-                               value="{{ config.paperless_ngx.api_url | default('') }}">
+                        <label for="paperless_api_url">API URL</label>
+                        <input type="text" class="form-control" id="paperless_api_url" name="paperless_api_url"
+                               value="{{ config.paperless.api_url | default('') }}">
                     </div>
                     <div class="col-md-6">
-                        <label for="paperless_ngx_api_token">API Token</label>
+                        <label for="paperless_api_token">API Token</label>
                         <div class="input-group">
-                            <input type="password" class="form-control" id="paperless_ngx_api_token" name="paperless_ngx_api_token" value="">
+                            <input type="password" class="form-control" id="paperless_api_token" name="paperless_api_token" value="">
                             <div class="input-group-append">
-                                <span class="input-group-text toggle-password" data-target="paperless_ngx_api_token"><i class="fas fa-eye"></i></span>
+                                <span class="input-group-text toggle-password" data-target="paperless_api_token"><i class="fas fa-eye"></i></span>
                             </div>
                         </div>
                         <small class="form-text text-muted">Leave blank to keep existing token.</small>
@@ -63,15 +63,15 @@
                 </div>
                 <div class="form-group row">
                     <div class="col-md-6">
-                        <label for="paperless_ngx_invoice_tags">Invoice Tags</label>
-                        <input type="text" class="form-control" id="paperless_ngx_invoice_tags" name="paperless_ngx_invoice_tags"
-                               value="{{ config.paperless_ngx.invoice_tags | default('') }}">
+                        <label for="paperless_invoice_tags">Invoice Tags</label>
+                        <input type="text" class="form-control" id="paperless_invoice_tags" name="paperless_invoice_tags"
+                               value="{{ config.paperless.invoice_tags | default('') }}">
                         <small class="form-text text-muted">Comma-separated tags</small>
                     </div>
                     <div class="col-md-6">
-                        <label for="paperless_ngx_receipt_tags">Receipt Tags</label>
-                        <input type="text" class="form-control" id="paperless_ngx_receipt_tags" name="paperless_ngx_receipt_tags"
-                               value="{{ config.paperless_ngx.receipt_tags | default('') }}">
+                        <label for="paperless_receipt_tags">Receipt Tags</label>
+                        <input type="text" class="form-control" id="paperless_receipt_tags" name="paperless_receipt_tags"
+                               value="{{ config.paperless.receipt_tags | default('') }}">
                         <small class="form-text text-muted">Comma-separated tags</small>
                     </div>
                 </div>
