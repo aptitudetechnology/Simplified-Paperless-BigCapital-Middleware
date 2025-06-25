@@ -65,8 +65,6 @@ class Config:
         config_dir = os.path.dirname(self.config_file)
         os.makedirs(config_dir, exist_ok=True) # <--- Make sure this line is here
 
-        with open(self.config_file, 'w') as f:
-            self.config.write(f)
         # --- END NEW SECTION ---
 
         with open(self.config_file, 'w') as f:
