@@ -54,7 +54,7 @@ class Config:
             'supported': 'USD,EUR,GBP,AUD,CAD'
         }
         # --- NEW SECTION FOR PAPERLESS-NGX (Add this back!) ---
-         self.config['paperless'] = {
+        self.config['paperless'] = {
             'api_url': 'http://paperless-ngx:8000/api/',
             'api_token': 'YOUR_GENERATED_API_TOKEN', # Placeholder for default creation
             'invoice_tags': 'Invoice,ProcessedByMiddleware',
