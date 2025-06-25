@@ -1,0 +1,121 @@
+version: '3.8'
+services:
+  middleware:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: simplified-paperless-bigcapital-middleware
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../uploads:/app/uploads
+      - ../logs:/app/logs
+      - ../data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - CONFIG_FILE=config.ini
+    depends_on: []
+
+  # Uncomment the lines below to enable paperless-ngx integration
+  # paperless-ngx:
+  #   image: ghcr.io/paperless-ngx/paperless-ngx:latest
+  #   container_name: paperless-ngx
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - paperless-redis
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - paperless_data:/usr/src/paperless/data
+  #     - paperless_media:/usr/src/paperless/media
+  #     - ../uploads:/usr/src/paperless/consume
+  #   environment:
+  #     PAPERLESS_REDIS: redis://paperless-redis:6379
+  #     PAPERLESS_SECRET_KEY: change-me-please
+  #     PAPERLESS_URL: http://localhost:8000
+  #     PAPERLESS_TIME_ZONE: America/New_York
+  #     PAPERLESS_OCR_LANGUAGE: eng
+
+  # paperless-redis:
+  #   image: docker.io/library/redis:7
+  #   container_name: paperless-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - paperless_redis:/data
+
+  # Uncomment the lines below to enable BigCapital integration
+  # WARNING: BigCapital requires significant system resources (MariaDB, MongoDB, Redis)
+  # bigcapital:
+  #   image: bigcapital/bigcapital:latest
+  #   container_name: bigcapital
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - bigcapital-mariadb
+  #     - bigcapital-mongo
+  #     - bigcapital-redis
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - DB_HOST=bigcapital-mariadb
+  #     - DB_PORT=3306
+  #     - DB_NAME=bigcapital
+  #     - DB_USER=bigcapital
+  #     - DB_PASSWORD=bigcapital
+  #     - MONGODB_URI=mongodb://bigcapital-mongo:27017/bigcapital
+  #     - REDIS_HOST=bigcapital-redis
+  #     - REDIS_PORT=6379
+  #     - JWT_SECRET=change-me-please-jwt-secret
+  #     - APP_URL=http://localhost:3000
+  #   volumes:
+  #     - bigcapital_uploads:/app/uploads
+  #     - bigcapital_storage:/app/storage
+
+  # bigcapital-mariadb:
+  #   image: docker.io/library/mariadb:10.11
+  #   container_name: bigcapital-mariadb
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: rootpassword
+  #     MYSQL_DATABASE: bigcapital
+  #     MYSQL_USER: bigcapital
+  #     MYSQL_PASSWORD: bigcapital
+  #   volumes:
+  #     - bigcapital_mariadb:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+
+  # bigcapital-mongo:
+  #   image: docker.io/library/mongo:6.0
+  #   container_name: bigcapital-mongo
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: bigcapital
+  #     MONGO_INITDB_ROOT_PASSWORD: bigcapital
+  #     MONGO_INITDB_DATABASE: bigcapital
+  #   volumes:
+  #     - bigcapital_mongo:/data/db
+  #   ports:
+  #     - "27017:27017"
+
+  # bigcapital-redis:
+  #   image: docker.io/library/redis:7
+  #   container_name: bigcapital-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - bigcapital_redis:/data
+  #   ports:
+  #     - "6379:6379"
+
+# volumes:
+#   # Paperless-ngx volumes
+#   paperless_data:
+#   paperless_media:
+#   paperless_redis:
+#   
+#   # BigCapital volumes
+#   bigcapital_uploads:
+#   bigcapital_storage:
+#   bigcapital_mariadb:
+#   bigcapital_mongo:
+#   bigcapital_redis:
