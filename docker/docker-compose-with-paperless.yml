@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  middleware:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: simplified-paperless-bigcapital-middleware
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../uploads:/app/uploads
+      - ../logs:/app/logs
+      - ../data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - CONFIG_FILE=config.ini
+    depends_on:
+      - paperless-ngx # Added this dependency
+
+  # Uncomment the lines below to enable paperless-ngx integration
+  paperless-ngx:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless-ngx
+    restart: unless-stopped
+    depends_on:
+      - paperless-redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - paperless_data:/usr/src/paperless/data
+      - paperless_media:/usr/src/paperless/media
+      - ../uploads:/usr/src/paperless/consume # This mounts your local 'uploads' to Paperless's 'consume' folder
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_SECRET_KEY: change-me-please-in-production # <<< IMPORTANT: Change this!
+      PAPERLESS_URL: http://paperless-ngx:8000 # Changed for inter-container communication
+      PAPERLESS_TIME_ZONE: Australia/Perth # Set to your local timezone
+      PAPERLESS_OCR_LANGUAGE: eng
+
+  paperless-redis:
+    image: docker.io/library/redis:7
+    container_name: paperless-redis
+    restart: unless-stopped
+    volumes:
+      - paperless_redis:/data
+
+volumes:
+  paperless_data:
+  paperless_media:
+  paperless_redis:
