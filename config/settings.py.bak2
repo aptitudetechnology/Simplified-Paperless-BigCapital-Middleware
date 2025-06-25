@@ -3,6 +3,10 @@ import os
 import configparser
 from pathlib import Path
 
+# Import the PaperlessConfigHandler from the new module
+from config.paperless.settings import PaperlessConfigHandler # Note the relative import if this is within a package
+
+
 class Config:
     def __init__(self, config_file='config.ini'):
         self.config = configparser.ConfigParser()
