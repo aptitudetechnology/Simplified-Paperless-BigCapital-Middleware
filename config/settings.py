@@ -54,12 +54,19 @@ class Config:
             'supported': 'USD,EUR,GBP,AUD,CAD'
         }
         # --- NEW SECTION FOR PAPERLESS-NGX (Add this back!) ---
-        self.config['paperless'] = {
+         self.config['paperless'] = {
             'api_url': 'http://paperless-ngx:8000/api/',
             'api_token': 'YOUR_GENERATED_API_TOKEN', # Placeholder for default creation
             'invoice_tags': 'Invoice,ProcessedByMiddleware',
             'receipt_tags': 'Receipt,ProcessedByMiddleware'
         }
+
+        # Ensure the directory for config_file exists before writing
+        config_dir = os.path.dirname(self.config_file)
+        os.makedirs(config_dir, exist_ok=True) # <--- Make sure this line is here
+
+        with open(self.config_file, 'w') as f:
+            self.config.write(f)
         # --- END NEW SECTION ---
 
         with open(self.config_file, 'w') as f:
