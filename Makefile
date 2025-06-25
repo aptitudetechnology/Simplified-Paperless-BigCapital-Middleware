@@ -18,10 +18,10 @@ clean:
 # --- Docker Compose related targets ---
 
 compose-up: build
-	docker-compose up -d
+	docker-compose -f docker/docker-compose.yml up -d
 
 compose-down:
-	docker-compose down
+	docker-compose -f docker/docker-compose.yml down
 
 compose-logs:
-	docker-compose logs -f
+	docker-compose -f docker/docker-compose.yml logs -f
