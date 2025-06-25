@@ -143,11 +143,11 @@ def create_web_blueprint(config, db_manager, doc_processor):
         if request.method == 'POST':
             try:
                 # Paperless-NGX
-                config.set('paperless_ngx', 'api_url', request.form.get('paperless_ngx_api_url'))
-                if request.form.get('paperless_ngx_api_token'):
-                    config.set('paperless_ngx', 'api_token', request.form.get('paperless_ngx_api_token'))
-                config.set('paperless_ngx', 'invoice_tags', request.form.get('paperless_ngx_invoice_tags'))
-                config.set('paperless_ngx', 'receipt_tags', request.form.get('paperless_ngx_receipt_tags'))
+                config.set('paperless', 'api_url', request.form.get('paperless_api_url'))
+                if request.form.get('paperless_api_token'):
+                    config.set('paperless', 'api_token', request.form.get('paperless_api_token'))
+                config.set('paperless', 'invoice_tags', request.form.get('paperless_invoice_tags'))
+                config.set('paperless', 'receipt_tags', request.form.get('paperless_receipt_tags'))
 
                 # Bigcapital
                 config.set('bigcapital', 'api_url', request.form.get('bigcapital_api_url'))
@@ -193,11 +193,11 @@ def create_web_blueprint(config, db_manager, doc_processor):
         else:  # GET request
             # Retrieve current configuration values for display
             current_config_data = {
-                'paperless_ngx': {
-                    'api_url': config.get('paperless_ngx', 'api_url', fallback=''),
+                'paperless': {
+                    'api_url': config.get('paperless', 'api_url', fallback=''),
                     'api_token': '',  # Don't expose token on GET
-                    'invoice_tags': config.get('paperless_ngx', 'invoice_tags', fallback=''),
-                    'receipt_tags': config.get('paperless_ngx', 'receipt_tags', fallback=''),
+                    'invoice_tags': config.get('paperless', 'invoice_tags', fallback=''),
+                    'receipt_tags': config.get('paperless', 'receipt_tags', fallback=''),
                 },
                 'bigcapital': {
                     'api_url': config.get('bigcapital', 'api_url', fallback=''),
