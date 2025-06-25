@@ -10,7 +10,7 @@ from config.paperless.settings import PaperlessConfigHandler # Correct import pa
 
 
 class Config:
-    def __init__(self, config_file='config.ini'):
+    def __init__(self, config_file='/config/config.ini'):
         self.config = configparser.ConfigParser()
         self.config_file = config_file
         self.load_config()
