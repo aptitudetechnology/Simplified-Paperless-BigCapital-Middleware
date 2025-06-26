@@ -253,7 +253,7 @@ def create_web_blueprint(config, db_manager, doc_processor):
 
             # Fetch all document types
             try:
-                type_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}/api/document_types/?page_size=max", headers=headers, verify=False)
+                type_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}document_types/?page_size=max", headers=headers, verify=False)
                 type_res.raise_for_status()
                 for t in type_res.json().get('results', []):
                     doc_types_map[t['id']] = t['name']
