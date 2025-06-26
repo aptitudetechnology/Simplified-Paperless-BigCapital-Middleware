@@ -244,7 +244,7 @@ def create_web_blueprint(config, db_manager, doc_processor):
 
             # Fetch all correspondents
             try:
-                corr_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}/api/correspondents/?page_size=max", headers=headers, verify=False)
+                corr_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}correspondents/?page_size=max", headers=headers, verify=False)
                 corr_res.raise_for_status()
                 for c in corr_res.json().get('results', []):
                     correspondents_map[c['id']] = c['name']
