@@ -70,21 +70,49 @@ def create_app(config_path: str = None) -> Flask:
         
         app.logger.info("Using legacy monolithic route structure")
     
-    # Configure logging
-    setup_logging(app, config)
-    
-    # Add template filters
-    @app.template_filter('datetime')
-    def datetime_filter(value):
-        """Format datetime for templates"""
-        if value is None:
-            return 'N/A'
-        if isinstance(value, str):
+  # Configure logging
+setup_logging(app, config)
+
+# Add template filters
+# @app.template_filter('datetime')
+# def datetime_filter(value):
+#     """Format datetime for templates"""
+#     if value is None:
+#         return 'N/A'
+#     if isinstance(value, str):
+#         try:
+#             value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+#         except:
+#             return value
+#     return value.strftime('%Y-%m-%d %H:%M:%S')
+
+@app.template_filter('datetime')
+def datetime_filter(value, format='%Y-%m-%d %H:%M:%S'):
+    """Format datetime for templates"""
+    if value is None:
+        return 'N/A'
+    if isinstance(value, str):
+        try:
+            # Handle ISO format strings from APIs
+            value = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        except ValueError:
             try:
-                value = datetime.fromisoformat(value.replace('Z', '+00:00'))
-            except:
-                return value
-        return value.strftime('%Y-%m-%d %H:%M:%S')
+                # Try parsing other common formats
+                value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+            except ValueError:
+                try:
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+                except ValueError:
+                    # If all parsing fails, return the original string
+                    return value
+    
+    # If it's a datetime object, format it
+    if hasattr(value, 'strftime'):
+        return value.strftime(format)
+    
+    return str(value)
+
+
     
     @app.template_filter('currency')
     def currency_filter(value):
