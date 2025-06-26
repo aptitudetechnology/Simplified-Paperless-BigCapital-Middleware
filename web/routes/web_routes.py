@@ -262,7 +262,7 @@ def create_web_blueprint(config, db_manager, doc_processor):
 
             # Fetch all tags
             try:
-                tags_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}/api/tags/?page_size=max", headers=headers, verify=False)
+                tags_res = requests.get(f"{PAPERLESS_NGX_BASE_URL}/tags/?page_size=max", headers=headers, verify=False)
                 tags_res.raise_for_status()
                 for t in tags_res.json().get('results', []):
                     tags_map[t['id']] = t['name']
