@@ -1,6 +1,52 @@
 # web/app.py
 
-# ... (imports and other code) ...
+
+
+# Add project root to Python path
+
+#import sys
+
+#import os
+
+#sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+from flask import Flask, render_template, request, jsonify
+
+import os
+
+import logging
+
+from datetime import datetime
+
+import secrets
+
+
+from config.settings import Config
+
+from database.connection import DatabaseManager
+
+from processing.document_processor import DocumentProcessor
+
+
+# Configuration flag to choose routing approach
+
+USE_MODULAR_ROUTES = True # Set to True to use new modular structure
+
+
+if USE_MODULAR_ROUTES:
+
+    # New modular structure imports
+
+    from web.routes import create_api_blueprint, create_web_blueprint
+
+    # Removed: create_config_blueprint (as its route is now in web_routes.py)
+
+else:
+
+    # Legacy monolithic structure imports
+
+    from web.legacy_routes import api, web, init_routes
 
 def create_app(config_path: str = None) -> Flask:
     """Create and configure Flask application"""
