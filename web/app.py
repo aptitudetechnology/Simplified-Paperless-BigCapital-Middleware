@@ -1,30 +1,6 @@
 # web/app.py
 
-# Add project root to Python path
-#import sys
-#import os
-#sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from flask import Flask, render_template, request, jsonify
-import os
-import logging
-from datetime import datetime
-import secrets
-
-from config.settings import Config
-from database.connection import DatabaseManager
-from processing.document_processor import DocumentProcessor
-
-# Configuration flag to choose routing approach
-USE_MODULAR_ROUTES = True # Set to True to use new modular structure
-
-if USE_MODULAR_ROUTES:
-    # New modular structure imports
-    from web.routes import create_api_blueprint, create_web_blueprint
-    # Removed: create_config_blueprint (as its route is now in web_routes.py)
-else:
-    # Legacy monolithic structure imports
-    from web.legacy_routes import api, web, init_routes
+# ... (imports and other code) ...
 
 def create_app(config_path: str = None) -> Flask:
     """Create and configure Flask application"""
@@ -57,7 +33,6 @@ def create_app(config_path: str = None) -> Flask:
         # Register the created blueprints
         app.register_blueprint(api_blueprint)
         app.register_blueprint(web_blueprint)
-        # Removed: app.register_blueprint(config_blueprint)
         
         app.logger.info("Using modular route structure")
     else:
@@ -70,50 +45,41 @@ def create_app(config_path: str = None) -> Flask:
         
         app.logger.info("Using legacy monolithic route structure")
     
-  # Configure logging
-setup_logging(app, config)
+    # Configure logging (MOVED INSIDE create_app)
+    setup_logging(app, config) # <--- THIS IS THE CORRECT PLACEMENT
 
-# Add template filters
-# @app.template_filter('datetime')
-# def datetime_filter(value):
-#     """Format datetime for templates"""
-#     if value is None:
-#         return 'N/A'
-#     if isinstance(value, str):
-#         try:
-#             value = datetime.fromisoformat(value.replace('Z', '+00:00'))
-#         except:
-#             return value
-#     return value.strftime('%Y-%m-%d %H:%M:%S')
+    # Add template filters
+    # ... (rest of your template filters and error handlers) ...
 
-@app.template_filter('datetime')
-def datetime_filter(value, format='%Y-%m-%d %H:%M:%S'):
-    """Format datetime for templates"""
-    if value is None:
-        return 'N/A'
-    if isinstance(value, str):
-        try:
-            # Handle ISO format strings from APIs
-            value = datetime.fromisoformat(value.replace('Z', '+00:00'))
-        except ValueError:
+    # Add template filters
+    @app.template_filter('datetime')
+    def datetime_filter(value, format='%Y-%m-%d %H:%M:%S'):
+        """Format datetime for templates"""
+        if value is None:
+            return 'N/A'
+        if isinstance(value, str):
             try:
-                # Try parsing other common formats
-                value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                # Handle ISO format strings from APIs
+                value = datetime.fromisoformat(value.replace('Z', '+00:00'))
             except ValueError:
                 try:
-                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+                    # Try parsing other common formats
+                    value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
                 except ValueError:
-                    # If all parsing fails, return the original string
-                    return value
+                    try:
+                        value = datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+                    except ValueError:
+                        # If all parsing fails, return the original string
+                        return value
+        
+        # If it's a datetime object, format it
+        if hasattr(value, 'strftime'):
+            return value.strftime(format)
+        
+        return str(value)
     
-    # If it's a datetime object, format it
-    if hasattr(value, 'strftime'):
-        return value.strftime(format)
-    
-    return str(value)
+    # ... (rest of the create_app function, including the template filters, context processor, and error handlers) ...
 
-
-    
     @app.template_filter('currency')
     def currency_filter(value):
         """Format currency for templates"""
@@ -186,6 +152,9 @@ def setup_logging(app: Flask, config: Config):
             logging.StreamHandler()
         ]
     )
+    
+    # Set Flask app logger
+    app.logger.setLevel(getattr(logging, log_level.upper()))
     
     # Set Flask app logger
     app.logger.setLevel(getattr(logging, log_level.upper()))
