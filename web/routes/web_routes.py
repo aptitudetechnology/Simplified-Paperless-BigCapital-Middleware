@@ -329,11 +329,11 @@ def create_web_blueprint(config, db_manager, doc_processor):
 
         if request.method == 'POST':
             try:
-            # Add debugging
-            logger.info(f"Config object type: {type(config)}")
-            logger.info(f"Config object methods: {dir(config)}")
-            logger.info(f"Has set method: {hasattr(config, 'set')}")
-            logger.info(f"Has save method: {hasattr(config, 'save')}")
+               # Add debugging
+               logger.info(f"Config object type: {type(config)}")
+               logger.info(f"Config object methods: {dir(config)}")
+               logger.info(f"Has set method: {hasattr(config, 'set')}")
+               logger.info(f"Has save method: {hasattr(config, 'save')}")
         
                 # Paperless-NGX
                 config.set('paperless', 'api_url', request.form.get('paperless_api_url'))
