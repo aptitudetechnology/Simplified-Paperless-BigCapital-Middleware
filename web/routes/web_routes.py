@@ -226,7 +226,7 @@ def create_web_blueprint(config, db_manager, doc_processor):
             params['query'] = search_query # Pass search query to Paperless-ngx API
 
         try:
-            api_url = f"{PAPERLESS_NGX_BASE_URL}/api/documents/"
+            api_url = f"{PAPERLESS_NGX_BASE_URL}documents/"
             logger.info(f"Fetching Paperless-ngx documents from: {api_url} with params: {params}")
 
             # It's highly recommended to set verify=True and provide a CA bundle
