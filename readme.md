@@ -343,33 +343,42 @@ level = DEBUG  # For detailed debugging
 - **python-dotenv 1.0.0**: Environment variable management
 - **pytest 7.4.2**: Testing framework
 
-## Roadmap
+# Roadmap
 
-### Phase 1 (Current) ✅
-- Modular architecture implementation
-- Basic OCR processing and data extraction
-- SQLite database storage
-- Web dashboard and API endpoints
-- Docker deployment support
+## Phase 1 (Current) ✅
+- [x] Modular architecture implementation
+- [x] Basic OCR processing and data extraction
+- [x] SQLite database storage
+- [x] Web dashboard and API endpoints
+- [x] Docker deployment support
 
-### Phase 2 (Planned)
-- **BigCapital API Integration**: Automatic invoice data synchronization
-- **Paperless-ngx Integration**: Document management workflow
-- **Enhanced Data Extraction**: Improved algorithms and accuracy
-- **Batch Processing**: Handle multiple documents simultaneously
+## Phase 2 (Core Integrations) 🔄
+- [ ] **BigCapital API Integration**: Automatic invoice data synchronization
+- [ ] **Paperless-ngx Integration**: Document retrieval and status updates
+- [ ] **Redis + Celery Queue System**: Asynchronous document processing
+- [ ] **Enhanced Error Handling**: Retry logic and failure recovery
+- [ ] **Processing Status Tracking**: Real-time job status and progress indicators
 
-### Phase 3 (Planned)
-- **Advanced Document Classification**: Automatic document type detection
-- **Workflow Automation**: Configurable processing pipelines
-- **Enhanced Configuration Management**: Full web-based configuration
-- **PostgreSQL Support**: Optional database upgrade path
+## Phase 3 (Enhanced Processing) 📋
+- [ ] **Improved Data Extraction**: Template-based extraction and confidence scoring
+- [ ] **Batch Processing**: Handle multiple documents simultaneously via queue
+- [ ] **Manual Review Interface**: Human validation for low-confidence extractions
+- [ ] **Duplicate Detection**: Prevent duplicate processing and BigCapital entries
+- [ ] **Enhanced Configuration Management**: Web-based settings and API key management
 
-### Phase 4 (Future)
-- **File System Monitoring**: Automatic processing of watched directories
-- **Machine Learning**: AI-powered extraction improvements
-- **Multi-language OCR**: Extended language support
-- **Advanced Analytics**: Detailed processing insights and reporting
+## Phase 4 (Production Features) 🚀
+- [ ] **PostgreSQL Support**: Optional database upgrade path
+- [ ] **Authentication & Authorization**: Secure access controls
+- [ ] **Monitoring & Metrics**: Processing analytics and system health
+- [ ] **Advanced Document Classification**: Automatic document type detection
+- [ ] **Webhook Support**: Event-driven notifications and integrations
 
+## Phase 5 (Advanced Automation) 🤖
+- [ ] **Workflow Automation**: Configurable processing pipelines
+- [ ] **File System Monitoring**: Automatic processing of watched directories
+- [ ] **Machine Learning**: AI-powered extraction improvements
+- [ ] **Multi-language OCR**: Extended language support
+- [ ] **Advanced Analytics**: Detailed processing insights and reporting
 ## Architecture Notes
 
 The application follows a modular architecture with clear separation of concerns:
