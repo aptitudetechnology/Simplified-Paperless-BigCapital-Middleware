@@ -351,10 +351,13 @@ level = DEBUG  # For detailed debugging
 - [x] SQLite database storage
 - [x] Web dashboard and API endpoints
 - [x] Docker deployment support
-
-## Phase 2 (Core Integrations) 🔄
+      
+## Phase 1.1 (In Progess)
 - [ ] **BigCapital API Integration**: Automatic invoice data synchronization
 - [ ] **Paperless-ngx Integration**: Document retrieval and status updates
+      
+## Phase 2 (Core Integrations) 🔄
+
 - [ ] **Redis + Celery Queue System**: Asynchronous document processing
 - [ ] **Enhanced Error Handling**: Retry logic and failure recovery
 - [ ] **Processing Status Tracking**: Real-time job status and progress indicators
@@ -363,8 +366,6 @@ level = DEBUG  # For detailed debugging
 - [ ] **Improved Data Extraction**: Template-based extraction and confidence scoring
 - [ ] **Batch Processing**: Handle multiple documents simultaneously via queue
 - [ ] **Manual Review Interface**: Human validation for low-confidence extractions
-- [ ] **Duplicate Detection**: Prevent duplicate processing and BigCapital entries
-- [ ] **Enhanced Configuration Management**: Web-based settings and API key management
 
 ## Phase 4 (Production Features) 🚀
 - [ ] **PostgreSQL Support**: Optional database upgrade path
@@ -379,6 +380,7 @@ level = DEBUG  # For detailed debugging
 - [ ] **Machine Learning**: AI-powered extraction improvements
 - [ ] **Multi-language OCR**: Extended language support
 - [ ] **Advanced Analytics**: Detailed processing insights and reporting
+      
 ## Architecture Notes
 
 The application follows a modular architecture with clear separation of concerns:
