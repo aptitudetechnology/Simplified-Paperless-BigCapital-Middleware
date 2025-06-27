@@ -347,7 +347,6 @@ level = DEBUG  # For detailed debugging
 
 ## Phase 1 (Current) ✅
 - [x] Modular architecture implementation
-- [x] Basic OCR processing and data extraction
 - [x] SQLite database storage
 - [x] Web dashboard and API endpoints
 - [x] Docker deployment support
@@ -355,6 +354,7 @@ level = DEBUG  # For detailed debugging
 ## Phase 1.1 (In Progess)
 - [ ] **BigCapital API Integration**: Automatic invoice data synchronization
 - [ ] **Paperless-ngx Integration**: Document retrieval and status updates
+- [ ] Basic OCR processing and data extraction     
       
 ## Phase 2 (Core Integrations) 🔄
 
