@@ -25,9 +25,6 @@
 
 ---
 
-# Simplified Paperless BigCapital Middleware
-
-*Your project description continues here...*
 
 # Paperless-BigCapital Middleware - Phase 1
 
