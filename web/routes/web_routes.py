@@ -330,6 +330,14 @@ def create_web_blueprint(config, db_manager, doc_processor):
         """Export status page"""
         # TODO: Implement BigCapital export status monitoring
         return render_template('bigcapital_status.html')
+        
+    @web.route('/bigcapital/configuration')
+    def bigcapital_configuration():
+        """BigCapital configuration management page"""
+        # TODO: Implement BigCapital configuration management interface
+        return render_template('bigcapital_configuration.html')
+    
+    
     # --- END OF BIGCAPITAL ROUTES ---
     
     # --- START OF MOVED CONFIGURATION ROUTE ---
