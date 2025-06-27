@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+            --bigcapital-color: #6c5ce7;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+
+        .sidebar {
+            background-color: var(--primary-color);
+            min-height: calc(100vh - 56px);
+            padding: 1rem 0;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0;
+            margin: 0.25rem 0;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link.bigcapital-link:hover,
+        .sidebar .nav-link.bigcapital-link.active {
+            background-color: rgba(108, 92, 231, 0.3);
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+
+        .status-badge {
+            font-size: 0.875em;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .status-pending { background-color: var(--warning-color); color: white; }
+        .status-processing { background-color: var(--secondary-color); color: white; }
+        .status-completed { background-color: var(--success-color); color: white; }
+        .status-failed { background-color: var(--danger-color); color: white; }
+        .status-exported { background-color: var(--bigcapital-color); color: white; }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .bigcapital-card {
+            background: linear-gradient(135deg, var(--bigcapital-color), #5a4fcf);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card h3,
+        .bigcapital-card h3 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-card p,
+        .bigcapital-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: var(--secondary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .table th {
+            background-color: var(--light-color);
+            border-top: none;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-bigcapital {
+            background-color: var(--bigcapital-color);
+            border-color: var(--bigcapital-color);
+            color: white;
+        }
+
+        .btn-bigcapital:hover {
+            background-color: #5a4fcf;
+            border-color: #5a4fcf;
+            color: white;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .nav-section-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.5rem 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+
+            .main-content {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('web.index') }}">
+                <i class="fas fa-file-invoice-dollar me-2"></i>
+                {{ app_name }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text">
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="current-time"></span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.index' %}active{% endif %}" href="{{ url_for('web.index') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.upload_page' %}active{% endif %}" href="{{ url_for('web.upload_page') }}">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>
+                                Upload
+                            </a>
+                        </li>
+                        
+                        <div class="nav-section-divider"></div>
+                        <div class="nav-section-title">Document Management</div>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.documents_list' %}active{% endif %}" href="{{ url_for('web.documents_list') }}">
+                                <i class="fas fa-file-alt me-2"></i>
+                                Documents
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.paperless_ngx_documents' %}active{% endif %}" href="{{ url_for('web.paperless_ngx_documents') }}">
+                                <i class="fas fa-file-invoice me-2"></i>
+                                Paperless-ngx Documents
+                            </a>
+                        </li>
+                        
+                        <div class="nav-section-divider"></div>
+                        <div class="nav-section-title">BigCapital Integration</div>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link bigcapital-link {% if request.endpoint == 'web.bigcapital_export' %}active{% endif %}" href="{{ url_for('web.bigcapital_export') }}">
+                                <i class="fas fa-money-bill-wave me-2"></i>
+                                Export to BigCapital
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link bigcapital-link {% if request.endpoint == 'web.bigcapital_status' %}active{% endif %}" href="{{ url_for('web.bigcapital_status') }}">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Export Status
+                            </a>
+                        </li>
+                        
+                        <div class="nav-section-divider"></div>
+                        <div class="nav-section-title">System</div>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'api.get_stats' %}active{% endif %}" href="#" onclick="refreshStats()">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Statistics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'web.configuration' %}active{% endif %}" href="{{ url_for('web.configuration') }}">
+                                <i class="fas fa-cog me-2"></i>
+                                Configuration
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="pt-3">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Refresh statistics
+        function refreshStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Stats refreshed:', data);
+                    // Update UI with new stats if needed
+                })
+                .catch(error => console.error('Error refreshing stats:', error));
+        }
+
+        // BigCapital export functionality
+        function exportToBigCapital(documentIds = []) {
+            const loadingSpinner = document.getElementById('bigcapital-loading');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'block';
+            }
+
+            const payload = documentIds.length > 0 ? { document_ids: documentIds } : {};
+
+            fetch('/api/bigcapital/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+                
+                if (data.success) {
+                    alert('Export to BigCapital initiated successfully!');
+                    // Refresh the page or update status
+                    if (typeof refreshExportStatus === 'function') {
+                        refreshExportStatus();
+                    }
+                } else {
+                    alert('Export failed: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+                console.error('Error exporting to BigCapital:', error);
+                alert('Error exporting to BigCapital: ' + error.message);
+            });
+        }
+
+        // Check BigCapital connection status
+        function checkBigCapitalConnection() {
+            fetch('/api/bigcapital/status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById('bigcapital-status');
+                    if (statusElement) {
+                        if (data.connected) {
+                            statusElement.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i>Connected';
+                        } else {
+                            statusElement.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i>Disconnected';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking BigCapital status:', error);
+                    const statusElement = document.getElementById('bigcapital-status');
+                    if (statusElement) {
+                        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle text-warning me-1"></i>Error';
+                    }
+                });
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshStats, 30000);
+        setInterval(checkBigCapitalConnection, 60000); // Check BigCapital connection every minute
+        
+        // Initial load
+        checkBigCapitalConnection();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
