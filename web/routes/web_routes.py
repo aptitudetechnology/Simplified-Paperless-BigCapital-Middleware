@@ -317,8 +317,21 @@ def create_web_blueprint(config, db_manager, doc_processor):
             YOUR_PAPERLESS_NGX_URL=PAPERLESS_NGX_BASE_URL,
             YOUR_PAPERLESS_NGX_BASE_URL=PAPERLESS_NGX_BASE_URL,
             search_query=search_query # Pass search query back to template
-        )
-
+        ) 
+    # --- START OF BIGCAPITAL ROUTES ---
+    @web.route('/bigcapital/export')
+    def bigcapital_export():
+        """Export interface page"""
+        # TODO: Implement BigCapital export interface
+        return render_template('bigcapital_export.html')
+    
+    @web.route('/bigcapital/status') 
+    def bigcapital_status():
+        """Export status page"""
+        # TODO: Implement BigCapital export status monitoring
+        return render_template('bigcapital_status.html')
+    # --- END OF BIGCAPITAL ROUTES ---
+    
     # --- START OF MOVED CONFIGURATION ROUTE ---
     # This route was previously in web/routes/config_routes.py
     @web.route('/configuration', methods=['GET', 'POST'])
