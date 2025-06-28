@@ -1,10 +1,10 @@
 # --- NEW ROUTE FOR PAPERLESS-NGX DOCUMENTS ---
-    @web.route("/paperless-ngx-documents")
-    def paperless_ngx_documents():
-        paperless_ngx_docs = []
-        current_page = request.args.get("page", 1, type=int)
-        search_query = request.args.get("q", "", type=str)
-        per_page = 10  # Default items per page for Paperless-ngx
+@web.route("/paperless-ngx-documents")
+def paperless_ngx_documents():
+    paperless_ngx_docs = []
+    current_page = request.args.get("page", 1, type=int)
+    search_query = request.args.get("q", "", type=str)
+    per_page = 10  # Default items per page for Paperless-ngx
 
         # Retrieve configuration from the 'config' object passed to the blueprint
         PAPERLESS_NGX_BASE_URL = config.get("paperless", "api_url", fallback="")
