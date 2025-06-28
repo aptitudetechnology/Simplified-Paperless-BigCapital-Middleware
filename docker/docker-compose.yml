@@ -41,7 +41,7 @@ services:
       PAPERLESS_TIME_ZONE: Australia/Perth
       
       # Enhanced OCR Configuration
-      PAPERLESS_OCR_LANGUAGE: eng+osd  # English + Orientation/Script Detection
+      PAPERLESS_OCR_LANGUAGE: eng  # English 
       PAPERLESS_OCR_MODE: redo         # Options: skip, redo, force
       PAPERLESS_OCR_CLEAN: clean       # Options: clean, clean-final, none
       PAPERLESS_OCR_DESKEW: "true"     # Correct skewed scans
