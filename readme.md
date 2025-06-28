@@ -367,7 +367,7 @@ level = DEBUG  # For detailed debugging
   - Tax/GST identification
 * **Data Validation & Cleaning**: Handle OCR errors and inconsistencies
 * **BigCapital Data Mapping**: Transform parsed data to BigCapital schema
-* **Basic Invoice Creation**: Create bills in BigCapital from parsed data   
+    
       
 ## Phase 2 (Core Integrations) 🔄
 
