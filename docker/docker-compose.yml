@@ -69,7 +69,7 @@ services:
       PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS: "true"
       
       # Receipt/invoice processing optimization
-      PAPERLESS_FILENAME_FORMAT: "{created_year}/{correspondent}/{title}"
+      PAPERLESS_FILENAME_FORMAT: "{{ created_year }}/{{ correspondent }}/{{ title }}"
   # Supporting services for enhanced OCR and document processing
   gotenberg:
     image: docker.io/gotenberg/gotenberg:7
