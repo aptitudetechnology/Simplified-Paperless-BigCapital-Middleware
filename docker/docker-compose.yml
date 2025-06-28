@@ -18,7 +18,6 @@ services:
       - paperless-ngx
       - gotenberg  # Added for enhanced document processing
       - tika        # Added for better parsing
-
   paperless-ngx:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     container_name: paperless-ngx
@@ -45,33 +44,32 @@ services:
       PAPERLESS_OCR_LANGUAGE: eng+osd  # English + Orientation/Script Detection
       PAPERLESS_OCR_MODE: redo         # Options: skip, redo, force
       PAPERLESS_OCR_CLEAN: clean       # Options: clean, clean-final, none
-      PAPERLESS_OCR_DESKEW: true       # Correct skewed scans
-      PAPERLESS_OCR_ROTATE_PAGES: true # Auto-rotate pages
-      PAPERLESS_OCR_PAGES: 0           # 0 = process all pages
-      PAPERLESS_OCR_IMAGE_DPI: 300     # Higher DPI for better OCR accuracy
+      PAPERLESS_OCR_DESKEW: "true"     # Correct skewed scans
+      PAPERLESS_OCR_ROTATE_PAGES: "true" # Auto-rotate pages
+      PAPERLESS_OCR_PAGES: "0"         # 0 = process all pages
+      PAPERLESS_OCR_IMAGE_DPI: "300"   # Higher DPI for better OCR accuracy
       
       # Document processing improvements
       PAPERLESS_OCR_OUTPUT_TYPE: pdfa-2 # PDF/A format for better compatibility
       PAPERLESS_OCR_SKIP_ARCHIVE_FILE: never # Always create archive files
       
       # Tika integration for better parsing
-      PAPERLESS_TIKA_ENABLED: true
+      PAPERLESS_TIKA_ENABLED: "true"
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
       
       # Memory and performance
       PAPERLESS_CONVERT_MEMORY_LIMIT: 256MB
-      PAPERLESS_TASK_WORKERS: 1
-      PAPERLESS_THREADS_PER_WORKER: 1
+      PAPERLESS_TASK_WORKERS: "1"
+      PAPERLESS_THREADS_PER_WORKER: "1"
       
       # Consumer settings for better file processing
-      PAPERLESS_CONSUMER_POLLING: 0
-      PAPERLESS_CONSUMER_RECURSIVE: true
-      PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS: true
+      PAPERLESS_CONSUMER_POLLING: "0"
+      PAPERLESS_CONSUMER_RECURSIVE: "true"
+      PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS: "true"
       
       # Receipt/invoice processing optimization
       PAPERLESS_FILENAME_FORMAT: "{created_year}/{correspondent}/{title}"
-
   # Supporting services for enhanced OCR and document processing
   gotenberg:
     image: docker.io/gotenberg/gotenberg:7
@@ -81,19 +79,16 @@ services:
       - "gotenberg"
       - "--chromium-disable-web-security"
       - "--chromium-allow-list=file:///*"
-
   tika:
     image: docker.io/apache/tika:latest
     container_name: paperless-tika
     restart: unless-stopped
-
   paperless-redis:
     image: docker.io/library/redis:7
     container_name: paperless-redis
     restart: unless-stopped
     volumes:
       - paperless_redis:/data
-
 volumes:
   paperless_data:
   paperless_media:
