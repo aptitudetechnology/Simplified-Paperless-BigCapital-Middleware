@@ -1,14 +1,34 @@
-# --- NEW ROUTE FOR PAPERLESS-NGX DOCUMENTS ---
-@web.route("/paperless-ngx-documents")
-def paperless_ngx_documents():
-    paperless_ngx_docs = []
-    current_page = request.args.get("page", 1, type=int)
-    search_query = request.args.get("q", "", type=str)
-    per_page = 10  # Default items per page for Paperless-ngx
+import requests
+import logging
+from flask import Blueprint, render_template, request, flash, current_app
+
+# Set up logging for this module
+logger = logging.getLogger(__name__)
+
+def create_web_blueprint(config):
+    """
+    Creates and configures the web-facing blueprint.
+    """
+    web = Blueprint("web", __name__)
+
+    # Pass config to the blueprint for access within routes
+    web.config = config
+
+    @web.route("/")
+    def index():
+        return render_template("index.html")
+
+    # --- NEW ROUTE FOR PAPERLESS-NGX DOCUMENTS ---
+    @web.route("/paperless-ngx-documents")
+    def paperless_ngx_documents():
+        paperless_ngx_docs = []
+        current_page = request.args.get("page", 1, type=int)
+        search_query = request.args.get("q", "", type=str)
+        per_page = 10  # Default items per page for Paperless-ngx
 
         # Retrieve configuration from the 'config' object passed to the blueprint
-        PAPERLESS_NGX_BASE_URL = config.get("paperless", "api_url", fallback="")
-        PAPERLESS_NGX_API_TOKEN = config.get("paperless", "api_token", fallback="")
+        PAPERLESS_NGX_BASE_URL = web.config.get("paperless", "api_url", fallback="")
+        PAPERLESS_NGX_API_TOKEN = web.config.get("paperless", "api_token", fallback="")
 
         # Initialize pagination data
         pagination = {
@@ -35,6 +55,7 @@ def paperless_ngx_documents():
                 pagination=pagination,
                 YOUR_PAPERLESS_NGX_URL="#",  # Fallback for template
                 YOUR_PAPERLESS_NGX_BASE_URL="#",
+                search_query=search_query, # Ensure search_query is passed for the template
             )
 
         if not PAPERLESS_NGX_API_TOKEN:
@@ -49,6 +70,7 @@ def paperless_ngx_documents():
                 pagination=pagination,
                 YOUR_PAPERLESS_NGX_URL=PAPERLESS_NGX_BASE_URL,
                 YOUR_PAPERLESS_NGX_BASE_URL=PAPERLESS_NGX_BASE_URL,
+                search_query=search_query, # Ensure search_query is passed for the template
             )
 
         headers = {
@@ -64,16 +86,17 @@ def paperless_ngx_documents():
             params["query"] = search_query  # Pass search query to Paperless-ngx API
 
         try:
-            api_url = f"{PAPERLESS_NGX_BASE_URL}documents/"
+            # Ensure the base URL ends with a slash if it's not already handled by requests
+            api_url = f"{PAPERLESS_NGX_BASE_URL.rstrip('/')}/api/documents/"
             logger.info(
                 f"Fetching Paperless-ngx documents from: {api_url} with params: {params}"
             )
 
             # It's highly recommended to set verify=True and provide a CA bundle
             # or ensure your Paperless-ngx has a valid certificate in production.
-            # For local development, verify=False might be used.
+            # For local development, verify=False might be used, but be aware of security implications.
             response = requests.get(
-                api_url, headers=headers, params=params, verify=False
+                api_url, headers=headers, params=params, verify=False # Changed verify to False for testing. Reconsider for production.
             )
             response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
             data = response.json()
@@ -87,7 +110,7 @@ def paperless_ngx_documents():
             # Fetch all correspondents
             try:
                 corr_res = requests.get(
-                    f"{PAPERLESS_NGX_BASE_URL}correspondents/?page_size=max",
+                    f"{PAPERLESS_NGX_BASE_URL.rstrip('/')}/api/correspondents/?page_size=max",
                     headers=headers,
                     verify=False,
                 )
@@ -100,7 +123,7 @@ def paperless_ngx_documents():
             # Fetch all document types
             try:
                 type_res = requests.get(
-                    f"{PAPERLESS_NGX_BASE_URL}document_types/?page_size=max",
+                    f"{PAPERLESS_NGX_BASE_URL.rstrip('/')}/api/document_types/?page_size=max",
                     headers=headers,
                     verify=False,
                 )
@@ -113,7 +136,7 @@ def paperless_ngx_documents():
             # Fetch all tags
             try:
                 tags_res = requests.get(
-                    f"{PAPERLESS_NGX_BASE_URL}/tags/?page_size=max",
+                    f"{PAPERLESS_NGX_BASE_URL.rstrip('/')}/api/tags/?page_size=max",
                     headers=headers,
                     verify=False,
                 )
@@ -128,8 +151,9 @@ def paperless_ngx_documents():
                     doc.get("correspondent"), "N/A"
                 )
                 document_type_name = doc_types_map.get(doc.get("document_type"), "N/A")
+                tags_ids = doc.get("tags", [])
                 tags_names = [
-                    tags_map.get(tag_id, "N/A") for tag_id in doc.get("tags", [])
+                    tags_map.get(tag_id, "N/A") for tag_id in tags_ids
                 ]
 
                 paperless_ngx_docs.append(
@@ -181,15 +205,18 @@ def paperless_ngx_documents():
                 "An unexpected error occurred in paperless_ngx_documents route."
             )  # Use exception for full traceback
 
-        # Clean the base URL to prevent double slashes
+        # Clean the base URL to prevent double slashes (for displaying in template)
         paperless_base_url = PAPERLESS_NGX_BASE_URL.rstrip("/")
 
-        # THIS RETURN STATEMENT NEEDS TO BE PROPERLY INDENTED INSIDE THE FUNCTION
         return render_template(
             "paperless_ngx_documents.html",
             paperless_ngx_docs=paperless_ngx_docs,
             pagination=pagination,
-            YOUR_PAPERLESS_NGX_URL=PAPERLESS_NGX_BASE_URL,
-            YOUR_PAPERLESS_NGX_BASE_URL=paperless_base_url,  # Pass cleaned URL
+            YOUR_PAPERLESS_NGX_URL=PAPERLESS_NGX_BASE_URL, # Original URL, might be useful for direct links
+            YOUR_PAPERLESS_NGX_BASE_URL=paperless_base_url,  # Pass cleaned URL for UI consistency
             search_query=search_query,
         )
+
+    # --- OTHER ROUTES CAN BE ADDED BELOW ---
+
+    return web
