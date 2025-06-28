@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}OCR Content: {{ document.title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-file-text me-2"></i> 
+        OCR Content: {{ document.title }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('web.paperless_ngx_documents') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Documents
+        </a>
+        <a href="{{ paperless_base_url }}/documents/{{ document.id }}/preview/" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+            <i class="fas fa-external-link-alt me-1"></i> View in Paperless-ngx
+        </a>
+    </div>
+</div>
+
+<div class="main-content mb-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Document Metadata -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i> Document Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td><strong>Title:</strong></td>
+                            <td>{{ document.title }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Original Filename:</strong></td>
+                            <td>{{ document.original_filename }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Document Type:</strong></td>
+                            <td>{{ document.document_type_name }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Correspondent:</strong></td>
+                            <td>{{ document.correspondent_name }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Created:</strong></td>
+                            <td>{{ document.created | datetime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modified:</strong></td>
+                            <td>{{ document.modified | datetime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i> Tags
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if document.tag_names %}
+                        {% for tag in document.tag_names %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ tag }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No tags assigned</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OCR Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i> OCR Content
+                    </h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="copyOCRContent()" title="Copy to Clipboard">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="toggleWordWrap()" title="Toggle Word Wrap">
+                            <i class="fas fa-align-left"></i> Wrap
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if document.content %}
+                        <div class="ocr-content-container">
+                            <pre id="ocrContent" class="ocr-content">{{ document.content }}</pre>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No OCR content available for this document.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ url_for('web.paperless_ngx_documents') }}" class="btn btn-secondary">
+                    <i class="fas fa-list me-1"></i> Back to Documents List
+                </a>
+                <a href="{{ paperless_base_url }}/documents/{{ document.id }}/preview/" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i> View Original in Paperless-ngx
+                </a>
+                <!-- Future: Add processing button here -->
+                <!-- <button type="button" class="btn btn-success" onclick="processDocument({{ document.id }})">
+                    <i class="fas fa-cogs me-1"></i> Process with Middleware
+                </button> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.ocr-content-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.ocr-content {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.ocr-content.no-wrap {
+    white-space: pre;
+    word-wrap: normal;
+}
+
+.table-borderless td {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+.table-borderless td:first-child {
+    width: 40%;
+    color: #6c757d;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    function copyOCRContent() {
+        const ocrContent = document.getElementById('ocrContent');
+        const text = ocrContent.textContent || ocrContent.innerText;
+        
+        navigator.clipboard.writeText(text).then(function() {
+            // Show success message
+            const button = event.target.closest('button');
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.classList.remove('btn-outline-secondary');
+            button.classList.add('btn-success');
+            
+            setTimeout(function() {
+                button.innerHTML = originalHTML;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+            alert('Failed to copy content to clipboard');
+        });
+    }
+
+    function toggleWordWrap() {
+        const ocrContent = document.getElementById('ocrContent');
+        const button = event.target.closest('button');
+        
+        if (ocrContent.classList.contains('no-wrap')) {
+            ocrContent.classList.remove('no-wrap');
+            button.innerHTML = '<i class="fas fa-align-left"></i> Wrap';
+            button.title = 'Toggle Word Wrap';
+        } else {
+            ocrContent.classList.add('no-wrap');
+            button.innerHTML = '<i class="fas fa-align-justify"></i> No Wrap';
+            button.title = 'Toggle Word Wrap';
+        }
+    }
+
+    // Future: Function to process document with middleware
+    /*
+    function processDocument(docId) {
+        if (confirm('Process this document with the middleware? This will extract data and potentially export to BigCapital.')) {
+            // Make API call to process document
+            fetch(`/api/process-paperless-document/${docId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Document processing started successfully!');
+                    // Optionally redirect to processing status page
+                } else {
+                    alert('Error starting document processing: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to start document processing');
+            });
+        }
+    }
+    */
+</script>
+{% endblock %}
