@@ -183,7 +183,7 @@ def create_web_blueprint(config, db_manager, doc_processor):
             flash(f'Error loading document: {str(e)}', 'error')
             return redirect(url_for('web.documents_list'))
 
-    --- NEW ROUTE FOR PAPERLESS-NGX OCR CONTENT ---
+   # --- NEW ROUTE FOR PAPERLESS-NGX OCR CONTENT ---
     @web.route('/paperless-ngx-document/<int:doc_id>/ocr')
     def paperless_ngx_document_ocr(doc_id: int):
         """Display OCR content for a specific Paperless-ngx document"""
