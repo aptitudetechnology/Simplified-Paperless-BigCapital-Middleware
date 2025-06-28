@@ -345,16 +345,29 @@ level = DEBUG  # For detailed debugging
 
 # Roadmap
 
-## Phase 1 (Current) ✅
-- [x] Modular architecture implementation
-- [x] SQLite database storage
-- [x] Web dashboard and API endpoints
-- [x] Docker deployment support
-      
-## Phase 1.1 (In Progess)
-- [ ] **BigCapital API Integration**: Automatic invoice data synchronization
-- [ ] **Paperless-ngx Integration**: Document retrieval and status updates
-- [ ] Basic OCR processing and data extraction     
+## Paperless-BigCapital Middleware Roadmap
+
+## Phase 1 (Complete) ✅
+* Modular architecture implementation
+* SQLite database storage
+* Web dashboard and API endpoints
+* Docker deployment support
+
+## Phase 1.1 (In Progress) 🚧
+* **Paperless-ngx Integration**: Document retrieval and status updates ✅
+* **OCR Content Access**: Extract text from processed documents ✅
+* **BigCapital API Integration**: Authentication and connection setup
+* **Basic Invoice Detection**: Identify invoice documents from OCR content
+
+## Phase 1.2 (Next Sprint) 🎯
+* **Invoice Data Parsing**: Extract structured data from OCR text
+  - Vendor/supplier identification
+  - Invoice numbers, dates, amounts
+  - Line item extraction
+  - Tax/GST identification
+* **Data Validation & Cleaning**: Handle OCR errors and inconsistencies
+* **BigCapital Data Mapping**: Transform parsed data to BigCapital schema
+* **Basic Invoice Creation**: Create bills in BigCapital from parsed data   
       
 ## Phase 2 (Core Integrations) 🔄
 
